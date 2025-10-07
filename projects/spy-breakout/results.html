@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Regime Classification - Results | Chia-Hung Kuo</title>
+    <link rel="stylesheet" href="../../asset/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>Market Regime Classification with Ensemble Methods</h1>
+            <p class="subtitle">Data science case study: ensemble methods on non-stationary time series</p>
+        </div>
+
+        <!-- Main Content Container -->
+        <div class="main-content">
+            <div class="content-area">
+                <!-- Navigation positioned inside content area -->
+                <div class="nav-container">
+                    <div class="nav-tabs">
+                        <a href="overview.html" class="nav-tab">Overview</a>
+                        <a href="implementation.html" class="nav-tab">Implementation</a>
+                        <a href="results.html" class="nav-tab active">Results</a>
+                        <a href="limitations.html" class="nav-tab">Caveats & Takeaways</a>
+                        <a href="visualizations.html" class="nav-tab">Visualizations</a>
+                    </div>
+                </div>
+
+                <!-- Results Content -->
+                <div class="content-panel">
+                        <h3>Performance Analysis</h3>
+                        <img src="../../asset/figure/projects/spy-breakout/cross_etf_performance_unified.png" alt="Cross-ETF Performance">
+                        <p><em>Non-SPY ETFs (particularly regression models) often predict SPY better than SPY itself. Individual models exhibit typical risk-return trade-off (higher mean, higher std)</em></p>
+
+                        <h3>Ensemble vs Individual Models</h3>
+                        <p><strong>Performance Comparison</strong>:</p>
+                        <ul>
+                            <li><strong>PR-AUC Mean</strong>: Best Individual 60.8% → Ensemble 95.6% (+57% improvement)</li>
+                            <li><strong>Std Deviation</strong>: Best Individual 12.8% → Ensemble 6.8% (-47% reduction)</li>
+                            <li><strong>Signal/Noise</strong>: Best Individual 4.75 → Ensemble 14.06 (3x improvement)</li>
+                        </ul>
+                        <p><em>Note: "Best Individual" was cherry-picked from 100+ models with hindsight</em></p>
+
+                        <img src="../../asset/figure/projects/spy-breakout/stability_analysis.png" alt="Stability Analysis">
+                        <p><em>Ensemble maintains consistency despite baseline volatility ranging from 23% to 59%</em></p>
+
+                        <h3>Why Tree-Based Meta-Learners Excel</h3>
+                        <p>Tree methods capture non-linear interactions between ETF signals:</p>
+                        <ul>
+                            <li>Random Forest: 95.6% ± 6.8% (S/N: 14.0)</li>
+                            <li>XGBoost: 94.1% ± 6.9% (S/N: 13.6)</li>
+                            <li>Naive Ensemble: 66.9% ± 10.8% (S/N: 6.2)</li>
+                            <li>Logistic Regression: 55% ± 15% (S/N: 3.7)</li>
+                        </ul>
+
+                        <img src="../../asset/figure/projects/spy-breakout/meta_learner_risk_return_analysis.png" alt="Meta-Learner Performance">
+                        <p><em>Tree-based meta-learners capture complex interactions linear models miss</em></p>
+
+                        <img src="../../asset/figure/projects/spy-breakout/pr_curves_comparison.png" alt="PR Curves">
+                        <p><em>Precision-Recall curves showing ensemble dominance across all operating points</em></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fixed Footer -->
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <span>© 2025 Chia-Hung Kuo</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

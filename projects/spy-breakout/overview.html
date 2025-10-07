@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Regime Classification | Chia-Hung Kuo</title>
+    <link rel="stylesheet" href="../../asset/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>Market Regime Classification with Ensemble Methods</h1>
+            <p class="subtitle">Data science case study: ensemble methods on non-stationary time series</p>
+        </div>
+
+        <!-- Main Content Container -->
+        <div class="main-content">
+            <div class="content-area">
+                <!-- Navigation positioned inside content area -->
+                <div class="nav-container">
+                    <div class="nav-tabs">
+                        <a href="overview.html" class="nav-tab active">Overview</a>
+                        <a href="implementation.html" class="nav-tab">Implementation</a>
+                        <a href="results.html" class="nav-tab">Results</a>
+                        <a href="limitations.html" class="nav-tab">Caveats & Takeaways</a>
+                        <a href="visualizations.html" class="nav-tab">Visualizations</a>
+                    </div>
+                </div>
+
+                <!-- Overview Content -->
+                <div class="content-panel">
+                        <h3>Problem Definition</h3>
+                        <p><strong>Task</strong>: Predict if SPY (S&P 500 ETF) will experience ≥0.4% price movement from 10:00 AM to market close (4:00 PM), using only the first 30 minutes of trading data.</p>
+
+                        <p><strong>Important</strong>: This is a data science project demonstrating ensemble methods on financial time series - NOT a trading strategy. Market prediction is the "hello world" of hard ML problems. This data science exercise uses financial data to demonstrate advanced ensemble techniques, variance reduction, and temporal validation.</p>
+
+                        <p><strong>Why This Makes an Interesting Data Science Challenge</strong>:</p>
+                        <ul>
+                            <li>Non-stationary time series (monthly breakout rates vary 5%-95%)</li>
+                            <li>Demonstrates advanced ensemble techniques for variance reduction</li>
+                            <li>Shows efficient processing of 14M+ records with Polars</li>
+                            <li>Tests rigorous temporal validation methodology</li>
+                        </ul>
+
+                        <h3>Key Results</h3>
+                        <ul>
+                            <li><strong>95.6% ± 6.8% PR-AUC</strong> in 2024 out-of-sample testing</li>
+                            <li><strong>47% variance reduction</strong> vs best individual model</li>
+                            <li><strong>2.9x better Signal/Noise ratio</strong> than best single model</li>
+                            <li><strong>100+ models</strong> managed with MLflow/Optuna</li>
+                        </ul>
+
+                        <img src="../../asset/figure/projects/spy-breakout/progressive_performance_ladder.png" alt="Progressive Performance Ladder">
+                        <p><em>Performance progression from baseline (42%) to final ensemble (95.6% PR-AUC)</em></p>
+
+                        <h3>Technical Approach</h3>
+                        <p><strong>Cross-ETF Architecture</strong>: Built specialized classification and regression models using different ETFs (bonds, small-caps, growth stocks) to predict the same SPY target. Tree-based meta-learners combine these diverse signals.</p>
+
+                        <p><strong>Key Innovation</strong>: Discovered regression models outperform classifiers when used for binary prediction ranking (2.79 vs 2.39 Signal/Noise ratio).</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fixed Footer -->
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <span>© 2025 Chia-Hung Kuo</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Regime Classification - Visualizations | Chia-Hung Kuo</title>
+    <link rel="stylesheet" href="../../asset/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>Market Regime Classification with Ensemble Methods</h1>
+            <p class="subtitle">Data science case study: ensemble methods on non-stationary time series</p>
+        </div>
+
+        <!-- Main Content Container -->
+        <div class="main-content">
+            <div class="content-area">
+                <!-- Navigation positioned inside content area -->
+                <div class="nav-container">
+                    <div class="nav-tabs">
+                        <a href="overview.html" class="nav-tab">Overview</a>
+                        <a href="implementation.html" class="nav-tab">Implementation</a>
+                        <a href="results.html" class="nav-tab">Results</a>
+                        <a href="limitations.html" class="nav-tab">Caveats & Takeaways</a>
+                        <a href="visualizations.html" class="nav-tab active">Visualizations</a>
+                    </div>
+                </div>
+
+                <!-- Visualizations Content -->
+                <div class="content-panel">
+                        <h3>All Visualizations</h3>
+
+                        <h4>Performance Overview</h4>
+                        <img src="../../asset/figure/projects/spy-breakout/progressive_performance_ladder.png" alt="Progressive Performance Ladder">
+                        <p><em>Progression from baseline (42%) to Cross-ETF ensemble (95.6% PR-AUC)</em></p>
+
+                        <h4>Market Context</h4>
+                        <img src="../../asset/figure/projects/spy-breakout/monthly_breakout_distribution_2017_2023.png" alt="Monthly Breakout Distribution">
+                        <p><em>Breakout rate distribution showing volatility regimes across 84 months</em></p>
+
+                        <h4>Cross-ETF Analysis</h4>
+                        <img src="../../asset/figure/projects/spy-breakout/cross_etf_performance_unified.png" alt="Cross-ETF Performance">
+                        <p><em>PR-AUC mean vs standard deviation across 9 ETFs - regression models outperform classification</em></p>
+
+                        <h4>Temporal Stability</h4>
+                        <img src="../../asset/figure/projects/spy-breakout/cross_etf_timeline_cls.png" alt="Temporal Instability">
+                        <p><em>Individual model performance instability motivating ensemble approach</em></p>
+
+                        <img src="../../asset/figure/projects/spy-breakout/stability_analysis.png" alt="Stability Analysis">
+                        <p><em>Ensemble consistency despite baseline volatility (23%-59% range)</em></p>
+
+                        <h4>Ensemble Performance</h4>
+                        <img src="../../asset/figure/projects/spy-breakout/meta_learner_risk_return_analysis.png" alt="Meta-Learner Performance">
+                        <p><em>Tree-based meta-learners capturing non-linear interactions</em></p>
+
+                        <img src="../../asset/figure/projects/spy-breakout/variance_reduction_analysis.png" alt="Variance Reduction">
+                        <p><em>Ensemble achieving higher mean AND lower variance vs top individual models</em></p>
+
+                        <img src="../../asset/figure/projects/spy-breakout/risk_return_frontier.png" alt="Risk-Return Frontier">
+                        <p><em>Pareto-optimal achievement: better performance with less risk</em></p>
+
+                        <img src="../../asset/figure/projects/spy-breakout/pr_curves_comparison.png" alt="PR Curves">
+                        <p><em>Precision-Recall curves showing ensemble dominance across all thresholds</em></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fixed Footer -->
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <span>© 2025 Chia-Hung Kuo</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

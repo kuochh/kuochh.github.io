@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Regime Classification - Implementation | Chia-Hung Kuo</title>
+    <link rel="stylesheet" href="../../asset/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>Market Regime Classification with Ensemble Methods</h1>
+            <p class="subtitle">Data science case study: ensemble methods on non-stationary time series</p>
+        </div>
+
+        <!-- Main Content Container -->
+        <div class="main-content">
+            <div class="content-area">
+                <!-- Navigation positioned inside content area -->
+                <div class="nav-container">
+                    <div class="nav-tabs">
+                        <a href="overview.html" class="nav-tab">Overview</a>
+                        <a href="implementation.html" class="nav-tab active">Implementation</a>
+                        <a href="results.html" class="nav-tab">Results</a>
+                        <a href="limitations.html" class="nav-tab">Caveats & Takeaways</a>
+                        <a href="visualizations.html" class="nav-tab">Visualizations</a>
+                    </div>
+                </div>
+
+                <!-- Implementation Content -->
+                <div class="content-panel">
+                        <h3>Data Pipeline</h3>
+                        <p><strong>Scale</strong>: 14M+ minute-level records across 9 ETFs (2017-2024)</p>
+                        <ul>
+                            <li>SPY, VTI, VOO (market indices)</li>
+                            <li>IWM, VUG (small-cap, growth)</li>
+                            <li>TLT, AGG, BND, HYG (bonds/credit)</li>
+                        </ul>
+
+                        <p><strong>Feature Engineering</strong>:</p>
+                        <ul>
+                            <li>Simple price/volume indicators</li>
+                            <li>Rolling statistics with multiple windows</li>
+                            <li>DTW-based pattern clustering on 30-minute trajectories</li>
+                            <li>Leveraged Polars to handle 14M+ records with 10x speed improvement over pandas</li>
+                        </ul>
+
+                        <h3>Model Architecture</h3>
+                        <p><strong>Base Models</strong> (100+ configurations per ETF):</p>
+                        <ul>
+                            <li>Model types: Classification AND regression models for each algorithm (XGBoost, RandomForest, LogisticRegression)</li>
+                            <li>Target variations: Multiple thresholds (0.3%, 0.4%, 0.5%) and directions (up/down) for signal diversity</li>
+                            <li>Feature selection: PCA (85%, 95% variance), SelectKBest (50, 100, 120)</li>
+                            <li>Time decay: α ∈ {0.0, 0.02, 0.05} for temporal weighting</li>
+                            <li>Hyperparameter tuning: Optuna with 1000+ trials per model type</li>
+                            <li>MLflow for comprehensive experiment tracking</li>
+                        </ul>
+
+                        <p><strong>Meta-Learning Stack</strong>:</p>
+                        <ul>
+                            <li>Stage 1: Train individual models per ETF (9 ETFs × multiple configs)</li>
+                            <li>Stage 2: Collect base model predictions as meta-features</li>
+                            <li>Stage 3: Meta-learner trained on pre-2024 data, tested on 2024</li>
+                            <li>Total runtime: ~4 hours for full pipeline - impractical for real-time trading</li>
+                        </ul>
+
+                        <h3>Validation Framework</h3>
+                        <p><strong>Temporal Separation</strong> (preventing leakage):</p>
+                        <ul>
+                            <li>2017-2023: Model development</li>
+                            <li>2022-2023: Ensemble training</li>
+                            <li>2024: Pure out-of-sample testing</li>
+                        </ul>
+
+                        <p><strong>Walk-Forward Validation</strong>:</p>
+                        <ul>
+                            <li>24-month rolling training window</li>
+                            <li>Monthly retraining cycle</li>
+                            <li>Each prediction uses only historical data</li>
+                            <li>Zero future information leakage guaranteed</li>
+                            <li>Mimics real-world constraints despite not being viable for trading</li>
+                        </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fixed Footer -->
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <span>© 2025 Chia-Hung Kuo</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

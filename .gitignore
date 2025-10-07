@@ -16,8 +16,8 @@ README.md
 instructions.md
 template.js
 
-# Archive files
-cards/archive-*
+# Old card system (migrated to HTML)
+cards/
 
 # Temporary files
 *.tmp
