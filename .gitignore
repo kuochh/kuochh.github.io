@@ -7,6 +7,9 @@
 ehthumbs.db
 Thumbs.db
 
+# Claude Code files
+.claude/
+
 # Development files
 CLAUDE.md
 README.md
