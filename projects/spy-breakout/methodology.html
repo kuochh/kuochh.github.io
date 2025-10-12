@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Regime Classification - Methodology | Chia-Hung Kuo</title>
+    <link rel="stylesheet" href="../../asset/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>Multi-Target Stacking: A Novel Ensemble Framework</h1>
+            <p class="subtitle">Error Decorrelation Through Target Diversity</p>
+        </div>
+
+        <!-- Main Content Container -->
+        <div class="main-content">
+            <div class="content-area">
+                <!-- Navigation positioned inside content area -->
+                <div class="nav-container">
+                    <div class="nav-tabs">
+                        <a href="overview.html" class="nav-tab">Overview</a>
+                        <a href="methodology.html" class="nav-tab active">Methodology</a>
+                        <a href="results.html" class="nav-tab">Results</a>
+                        <a href="technical.html" class="nav-tab">Technical Deep Dive</a>
+                    </div>
+                </div>
+
+                <!-- Methodology Content -->
+                <div class="content-panel">
+                        <h3>System Architecture Overview</h3>
+                        <p><strong>Cross-ETF Meta-Learning Pipeline</strong>: A three-stage architecture where diverse financial instruments collectively predict SPY movements through sophisticated ensemble learning.</p>
+
+                        <div style="text-align: center; margin: 30px 0; padding: 20px; background-color: #f5f5f5; border-radius: 8px;">
+                            <strong>9 ETFs → 852×9 Features → SelectK/PCA → 100+ x 9 Models → Rank Classification/Regression Models → Meta-Learner → 95.6% ± 6.8% PR-AUC</strong>
+                        </div>
+
+                        <div style="margin: 30px 0; padding: 25px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                            <div style="font-family: 'Courier New', monospace; font-size: 14px; line-height: 1.8; text-align: center;">
+                                <div style="color: #1976D2; font-weight: bold; margin-bottom: 15px;">Pipeline Flow Visualization</div>
+                                <div style="color: #333;">
+                                    <span style="background-color: #e3f2fd; padding: 4px 8px; border-radius: 4px;">9 ETFs × 852 features</span>
+                                    <br>↓<br>
+                                    <span style="background-color: #e8f5e8; padding: 4px 8px; border-radius: 4px;">900+ models trained</span>
+                                    <br>↓<br>
+                                    <span style="background-color: #fff3e0; padding: 4px 8px; border-radius: 4px;">Top model selected per decay x ETF configuration</span>
+                                    <br>↓<br>
+                                    <span style="background-color: #fce4ec; padding: 4px 8px; border-radius: 4px;">Meta-learner stacking</span>
+                                    <br>↓<br>
+                                    <span style="background-color: #f3e5f5; padding: 4px 8px; border-radius: 4px; font-weight: bold;">95.6% ± 6.8% PR-AUC</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3>Three-Stage Implementation Process</h3>
+
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 20px; margin: 20px 0;">
+                            <div style="border: 2px solid #1976D2; padding: 20px; border-radius: 8px; background-color: #f8f9ff;">
+                                <h4 style="margin-top: 0; color: #1976D2;">Stage 1: Feature Engineering (2017-2024)</h4>
+                                <p style="margin-bottom: 4px;"><strong>Cross-ETF Feature Creation and Target Alignment</strong>:</p>
+                                <ul style="margin-top: 0; margin-bottom: 0;">
+                                    <li><strong>Feature Space</strong>: Create 852 features per ETF</li>
+                                    <li><strong>Feature Types</strong>: Price dynamics, volume patterns, DTW clustering, external market context</li>
+                                    <li><strong>Multi-Target Alignment</strong>: All ETFs predict SPY targets at 0.3%, 0.4%, 0.5% up, 0.5% down thresholds</li>
+                                </ul>
+
+                                <div style="border: 1px solid #1565C0; padding: 15px; border-radius: 6px; background-color: #f0f4ff; margin-top: 15px;">
+                                    <h5 style="margin-top: 0; color: #1565C0;">Cross-Domain Innovation</h5>
+                                    <p style="margin-bottom: 0;"><strong>Specialized Models vs. Giant Model</strong>: Instead of building one giant model with all features, we train separate models on each ETF's features (e.g TLT predicting SPY), then use a meta-learner to combine their predictions. This architecture significantly outperforms a single large model because each ETF-specific model becomes an expert on its domain, and the meta-learner discovers optimal ways to combine these expert opinions.</p>
+                                </div>
+                            </div>
+
+                            <div style="border: 2px solid #388E3C; padding: 20px; border-radius: 8px; background-color: #f8fff8;">
+                                <h4 style="margin-top: 0; color: #388E3C;">Stage 2: Individual Model Training (2017-2023)</h4>
+                                <p style="margin-bottom: 4px;"><strong>Walk-Forward Base Model Development</strong>:</p>
+                                <ul style="margin-top: 0; margin-bottom: 0;">
+                                    <li><strong>Training Period</strong>: 2017/01/01 to 2023/12/31 using 24-month rolling windows</li>
+                                    <li><strong>Feature Selection</strong>: Apply SelectK/PCA within each 24-month training window (no future data leakage)</li>
+                                    <li><strong>Model Training</strong>: Train 100+ model configurations per ETF (classification & regression)</li>
+                                    <li><strong>Algorithms</strong>: XGBoost, Random Forest, Logistic Regression with L1/L2 regularization</li>
+                                    <li><strong>Decay Configurations</strong>: α ∈ {0, 2, 5, 10} for temporal weighting adaptation</li>
+                                    <li><strong>Experiment Management</strong>: MLflow tracking for 900+ experiments with systematic hyperparameter optimization via Optuna</li>
+                                    <li><strong>Scale</strong>: 900+ total models across all ETFs and configurations</li>
+                                </ul>
+
+                                <div style="border: 1px solid #2E7D32; padding: 15px; border-radius: 6px; background-color: #f1f8e9; margin-top: 15px;">
+                                    <h5 style="margin-top: 0; color: #2E7D32;">Regression vs Classification Discovery</h5>
+                                    <p style="margin-bottom: 0;"><strong>Regression Models Consistently Outperform Classification</strong>: Through systematic ranking, regression models achieve higher PR-AUC means than classification models, albeit with higher variance. This discovery motivates Stage 3's meta-learning approach - we want to harness this superior performance and variance (which indicates model diversity), but need the meta-learner to intelligently map regression outputs to [0, 1] probabilities for optimal ensemble combination.</p>
+                                </div>
+                            </div>
+
+                            <div style="border: 2px solid #F57C00; padding: 20px; border-radius: 8px; background-color: #fff8f0;">
+                                <h4 style="margin-top: 0; color: #F57C00;">Stage 3: Meta-Learning Assembly (2024)</h4>
+                                <p style="margin-bottom: 4px;"><strong>Model Ranking and Selection</strong>:</p>
+                                <ul style="margin-top: 0; margin-bottom: 15px;">
+                                    <li><strong>Performance Ranking</strong>: Rank all 900+ models by PR-AUC on 2017-2023</li>
+                                    <li><strong>Model Selection</strong>: Select top-performing models per decay X ETF configuration</li>
+                                    <li><strong>Meta-Features</strong>: Stack selected model predictions as features - meta-learner learns optimal combination weights</li>
+                                    <li><strong>Temporal Split Strategy</strong>: Base models (2017-2023) → Meta-learner training (2022-2023) → Evaluation (2024) for rigorous temporal isolation</li>
+                                </ul>
+
+                                <div style="border: 1px solid #D84315; padding: 15px; border-radius: 6px; background-color: #fef7f0; margin-top: 15px;">
+                                    <h5 style="margin-top: 0; color: #D84315;">Meta-Learner Intelligence</h5>
+                                    <p style="margin-bottom: 0;"><strong>Learning When to Trust Each Model</strong>: Tree-based meta-learners (Random Forest/XGBoost) discover complex interactions between model predictions - for example, when SPY models with decay α=2 should be trusted more if TLT bond models agree. We expect tree-based approaches to outperform logistic regression because they capture non-linear model interactions.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- to claude: the above is great, don't change anything, however, since we are using stage 1, 2, 3
+                        from above, can we reorganize below to be under each stage, like obviously data foundation belong in stage 1
+                        do you understand what I am saying? -->
+
+                        <h3>Data Foundation</h3>
+                        <p><strong>Scale & Coverage</strong>: 14M+ minute-level records spanning 2017-2024 across carefully selected ETFs representing different market segments:</p>
+
+                        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                            <tr style="background-color: #f0f0f0;">
+                                <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Asset Class</th>
+                                <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">ETFs</th>
+                                <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Purpose</th>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 12px;">Equity Indices</td>
+                                <td style="border: 1px solid #ddd; padding: 12px;">SPY, VTI, VOO</td>
+                                <td style="border: 1px solid #ddd; padding: 12px;">Broad market signals</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 12px;">Factor/Sector</td>
+                                <td style="border: 1px solid #ddd; padding: 12px;">IWM, VUG</td>
+                                <td style="border: 1px solid #ddd; padding: 12px;">Small-cap, growth dynamics</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 12px;">Fixed Income</td>
+                                <td style="border: 1px solid #ddd; padding: 12px;">TLT, AGG, BND, HYG</td>
+                                <td style="border: 1px solid #ddd; padding: 12px;">Cross-asset regime signals</td>
+                            </tr>
+                        </table>
+
+                        <h3>Feature Engineering at Scale</h3>
+                        <p><strong>852 Features Per ETF</strong>: Each ETF contributes a sophisticated feature set totaling 7,668 dimensions across all instruments:</p>
+                        <ul>
+                            <li><strong>Price Dynamics</strong>: Multiple rolling statistics, momentum indicators, volatility measures</li>
+                            <li><strong>Volume Patterns</strong>: Normalized trading volumes, minute-level volume profiles</li>
+                            <li><strong>TSlearn DTW Clustering</strong>: Sophisticated pattern recognition clustering intraday trajectories within each ETF individually</li>
+                            <li><strong>External Market Context</strong>: 47 features including economic indicators (interest rates, inflation, unemployment), currency rates (USD/JPY, USD/EUR), volatility indices (VIX, VXV), Fed meeting timing, and comprehensive calendar effects</li>
+                        </ul>
+
+                        <p><strong>Engineering Optimizations</strong>: Leveraged Polars for 10x speedup over pandas, enabling efficient processing of 14M+ records with complex transformations.</p>
+
+                        <h3>Rigorous Validation Methodology</h3>
+                        <p><strong>84-Fold Walk-Forward Validation</strong>: The gold standard for time series validation, ensuring zero data leakage while maintaining statistical power:</p>
+
+                        <ul>
+                            <li><strong>Training Window</strong>: 24-month rolling history for model development</li>
+                            <li><strong>Test Period</strong>: Monthly out-of-sample evaluation (2017-2024)</li>
+                            <li><strong>Temporal Isolation</strong>: Each prediction uses only historical information available at prediction time</li>
+                            <li><strong>Feature Selection Isolation</strong>: PCA and SelectK applied independently within each 24-month training window, ensuring zero forward-looking bias</li>
+                            <li><strong>Meta-Learning Split</strong>: Base models trained on 2017-2023, meta-learner on 2022-2023, evaluation on 2024</li>
+                        </ul>
+
+
+                        <h3>Multi-Target Model Architecture</h3>
+                        <p><strong>Three Complementary Model Groups</strong>: Each group captures different aspects of market behavior through diverse target specifications.</p>
+
+                        <p><strong>Two Model Classes</strong>: Each target group includes both classification models (predicting breakout probability) and regression models (predicting breakout magnitude), with distinct temporal decay configurations.</p>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin: 20px 0;">
+                            <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+                                <h4 style="margin-top: 0; color: #1976D2;">CORE Models</h4>
+                                <p>Primary 0.4% threshold<br>
+                                <strong>Classification</strong>: α ∈ {0, 2, 5}<br>
+                                <strong>Regression</strong>: α ∈ {2, 5, 10}<br>
+                                <strong>Purpose</strong>: Main signal capture</p>
+                            </div>
+                            <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+                                <h4 style="margin-top: 0; color: #388E3C;">ADJACENT Models</h4>
+                                <p>0.3% and 0.5% thresholds<br>
+                                Both classification & regression<br>
+                                Respective decay configurations<br>
+                                <strong>Purpose</strong>: Signal diversity</p>
+                            </div>
+                            <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
+                                <h4 style="margin-top: 0; color: #F57C00;">CONTRARIAN Models</h4>
+                                <p>Opposite direction (-0.5%)<br>
+                                Both classification & regression<br>
+                                Regime detection focus<br>
+                                <strong>Purpose</strong>: Robustness</p>
+                            </div>
+                        </div>
+
+
+                        <h3>Technology Stack & Scale</h3>
+                        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                            <tr style="background-color: #f0f0f0;">
+                                <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Component</th>
+                                <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Technology</th>
+                                <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Scale/Performance</th>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 12px;">Data Processing</td>
+                                <td style="border: 1px solid #ddd; padding: 12px;">Polars</td>
+                                <td style="border: 1px solid #ddd; padding: 12px;">10x speedup, 14M+ records</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 12px;">Experiment Tracking</td>
+                                <td style="border: 1px solid #ddd; padding: 12px;">MLflow</td>
+                                <td style="border: 1px solid #ddd; padding: 12px;">900+ experiments managed</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 12px;">Hyperparameter Optimization</td>
+                                <td style="border: 1px solid #ddd; padding: 12px;">Optuna</td>
+                                <td style="border: 1px solid #ddd; padding: 12px;">1000+ trials per model type</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 12px;">Pattern Recognition</td>
+                                <td style="border: 1px solid #ddd; padding: 12px;">TSlearn DTW</td>
+                                <td style="border: 1px solid #ddd; padding: 12px;">Intraday pattern clustering per ETF</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 12px;">Meta-Learning</td>
+                                <td style="border: 1px solid #ddd; padding: 12px;">XGBoost/RandomForest</td>
+                                <td style="border: 1px solid #ddd; padding: 12px;">100+ base model predictions</td>
+                            </tr>
+                        </table>
+
+                        <h3>Research Pipeline Progression</h3>
+                        <p><strong>Systematic 6-Month Development</strong>: A comprehensive series of numbered Python modules demonstrate methodical research progression from data acquisition to final ensemble implementation, showcasing production-grade ML engineering practices. The complete codebase and methodology documentation will be made available upon request for academic or professional review.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fixed Footer -->
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <span>© 2025 Chia-Hung Kuo</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

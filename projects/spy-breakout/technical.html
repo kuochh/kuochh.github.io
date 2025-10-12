@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technical Deep Dive | Chia-Hung Kuo</title>
+    <link rel="stylesheet" href="../../asset/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>Multi-Target Stacking: A Novel Ensemble Framework</h1>
+            <p class="subtitle">Error Decorrelation Through Target Diversity</p>
+        </div>
+
+        <!-- Main Content Container -->
+        <div class="main-content">
+            <div class="content-area">
+                <!-- Navigation positioned inside content area -->
+                <div class="nav-container">
+                    <div class="nav-tabs">
+                        <a href="overview.html" class="nav-tab">Overview</a>
+                        <a href="methodology.html" class="nav-tab">Methodology</a>
+                        <a href="results.html" class="nav-tab">Results</a>
+                        <a href="technical.html" class="nav-tab active">Technical Deep Dive</a>
+                    </div>
+                </div>
+
+                <!-- Technical Deep Dive Content -->
+                <div class="content-panel">
+
+                    <h2 style="text-align: left;">1. The Multi-Target Stacking Framework</h2>
+
+                    <h3>1.1 Novel Ensemble Approach</h3>
+
+                    <p>I propose a novel ensemble approach that leverages target diversity in addition to traditional model diversity. Rather than training multiple models on the same prediction target, I systematically train weak learners on related auxiliary targets and combine their predictions using meta-learning.</p>
+
+                    <p>Goal: Predict target Y using feature set X. Instead of the standard approach M(X) → Y, I define a series of auxiliary targets Y₁, Y₂, Y₃, ..., Yₖ that complement the meta-learner.</p>
+
+                    <pre>
+Given: Feature set X, Primary target Y
+
+Define auxiliary targets: Y₁, Y₂, Y₃, ..., Yₖ (related to Y)
+
+Base Models Layer:
+Y₁: [M₁(X→Y₁), M₂(X→Y₁), ..., Mₖ₁(X→Y₁)] → Predictions P₁
+Y₂: [M₁(X→Y₂), M₂(X→Y₂), ..., Mₖ₂(X→Y₂)] → Predictions P₂
+Y₃: [M₁(X→Y₃), M₂(X→Y₃), ..., Mₖ₃(X→Y₃)] → Predictions P₃
+
+Meta-Learning Layer:
+[P₁, P₂, P₃, ..., Pₖ] → Meta-Learner → Final Prediction for Y
+                    </pre>
+
+                    <p>The key insight: weak individual predictors become powerful through intelligent combination when they capture different aspects of the same underlying phenomenon.</p>
+
+                    <h3>1.2 Demonstration: SPY Breakout Prediction</h3>
+
+                    <p>I demonstrate this on financial time series because financial markets provide natural auxiliary targets with clear ordinal relationships (0.3%, 0.4%, 0.5% thresholds) and directional diversity (upward vs downward breakouts). This domain offers high-frequency, non-stationary data that stress-tests ensemble robustness while providing multiple correlated prediction objectives.</p>
+
+                    <p>Primary target: SPY 0.4% upward breakout</p>
+
+                    <p>Auxiliary target groups:</p>
+                    <ul>
+                        <li>CORE (0.4%): Direct signal for main objective</li>
+                        <li>ADJACENT (0.3%, 0.5%): Ordinal signal strength encoding</li>
+                        <li>CONTRARIAN (-0.5%): Volatility regime detection</li>
+                    </ul>
+
+                    <p>Cross-ETF innovation: I train bond ETFs (TLT, AGG), small-cap (IWM), and growth/value (VUG, VTV) to predict SPY using their domain-specific features.</p>
+
+                    <h3>1.3 Why Target Diversity Works: Error Decorrelation</h3>
+
+                    <p>The framework exploits a crucial distinction: targets can be correlated while prediction errors remain independent.</p>
+
+                    <p>If SPY breaks 0.5%, it necessarily broke 0.4% and 0.3% (nested targets → high correlation).
+                    BUT when both models predict the 0.4% target, they make complementary errors:</p>
+
+                    <ul>
+                        <li>Model A (trained on 0.3%): Over-sensitive, makes false positive errors on borderline cases (0.3-0.4% range)</li>
+                        <li>Model B (trained on 0.5%): Under-sensitive, makes false negative errors on moderate breakouts (0.4-0.5% range)</li>
+                    </ul>
+
+                    <p>Result: Correlated targets produce complementary error patterns (over-prediction vs under-prediction) that the meta-learner exploits.</p>
+
+                    <p>Cross-ETF features amplify this effect - bond ETF patterns that predict 0.3% SPY moves may not predict 0.5% moves, creating natural error decorrelation across both targets and feature domains.</p>
+
+                    <p>Given this error decorrelation mechanism, the next question is: what type of base learners maximize meta-feature information?</p>
+
+                    <h3>1.4 What Models Work Best: Regression for Ranking</h3>
+
+                    <p>I discovered that regression models significantly outperform classification for this stacking architecture. Regression predicts continuous returns in ℝ, providing excellent ranking ability with higher variation. This ranking capability serves as an ideal gateway for ensembling.</p>
+
+                    <p>Empirical evidence: Regression achieves 2.79 Signal-to-Noise ratio vs 2.39 for classification models across all auxiliary targets. The continuous ranking information creates richer meta-features that tree-based meta-learners exploit more effectively than binary predictions.</p>
+
+                    <p>With optimal base learners identified, the final question becomes: how should we combine their predictions?</p>
+
+                    <h3>1.5 How to Combine: Tree-Based Meta-Learning</h3>
+
+                    <p>Random Forest and XGBoost meta-learners dramatically outperform linear methods in this framework (95.6% vs 55% performance). Tree-based models naturally handle:</p>
+
+                    <ul>
+                        <li>Non-linear interactions between prediction groups</li>
+                        <li>Ordinal relationships in auxiliary target hierarchies</li>
+                        <li>Conditional logic ("if Group A disagrees with Group B, then...")</li>
+                        <li>Feature importance across heterogeneous meta-feature spaces</li>
+                    </ul>
+
+                    <p>This 40-percentage-point gap proves the meta-learner learns sophisticated signal combination, not simple weighted averaging. Linear methods cannot capture the complex interactions between cross-ETF predictions and multi-target signals.</p>
+
+                    <h3>1.6 Difference from Standard Stacking</h3>
+
+                    <p>Standard stacking (Wolpert 1992) achieves diversity through algorithmic variation - training different model types on the same target:</p>
+
+                    <p>Standard stacking: [Model₁(X→Y), Model₂(X→Y), Model₃(X→Y)] → Meta-learner</p>
+
+                    <p>My multi-target stacking achieves diversity through target variation - training models on related targets:</p>
+
+                    <p>Multi-target stacking: [Models(X→Y₁), Models(X→Y₂), Models(X→Y₃)] → Meta-learner</p>
+
+                    <p>The architectural difference is fundamental: standard stacking relies on algorithmic diversity (different models, same target) while multi-target stacking exploits target diversity (related targets, similar models). This provides complementary information sources rather than just different computational approaches to the same prediction problem.</p>
+
+                    <h3>1.7 Difference from Multi-Task Learning</h3>
+
+                    <p>Multi-task learning (Caruana 1997) optimizes shared representations across tasks simultaneously through joint optimization with shared parameters. The model learns common features that benefit multiple related tasks during training.</p>
+
+                    <p>Multi-task learning: Joint optimization f(X) → [Y₁, Y₂, Y₃] with shared parameters</p>
+
+                    <p>My multi-target stacking maintains independent base models and performs fusion only at the meta-learning stage:</p>
+
+                    <p>Multi-target stacking: Independent [f₁(X→Y₁), f₂(X→Y₂), f₃(X→Y₃)] → Meta-learner(Y)</p>
+
+                    <p>This preserves model independence (crucial for variance reduction) while still capturing cross-target relationships through the meta-learner. Each base model optimizes solely for its assigned target, preventing harmful interference between objectives, then the meta-learner learns optimal combination strategies from their independent predictions.</p>
+
+                    <h2 style="text-align: left;">2. Architecture & Implementation Details</h2>
+
+                    <h3>2.1 The High-Dimensional Challenge: p > n Problem</h3>
+
+                    <p>The implementation faces a fundamental challenge: 852 engineered features against approximately 500 trading days per fold. This 1.7:1 feature-to-sample ratio (p > n regime) would guarantee overfitting without dimensionality reduction.</p>
+
+                    <p>I address this through systematic feature selection applied within each cross-validation fold:</p>
+                    <ul>
+                        <li>PCA dimensionality reduction: 85%, 95% variance retention</li>
+                        <li>SelectKBest feature selection: [50, 100, 150] features</li>
+                        <li>Feature selection trained only on fold training data, preventing data leakage</li>
+                    </ul>
+
+                    <p>This transforms the problem from p > n (852:500) to p << n (50-150:500), enabling reliable model training and generalization.</p>
+
+                    <h3>2.2 Three-Stage Pipeline Architecture</h3>
+
+                    <p>The system implements a clean separation of concerns across three stages:</p>
+
+                    <p><strong>Stage 1: Feature Engineering</strong></p>
+                    <ul>
+                        <li>852 features per ETF (95% domain-specific, 5% shared across all ETFs)</li>
+                        <li>Cross-ETF innovation: Each ETF predicts SPY using domain-specific features</li>
+                        <li>Multi-domain prediction: TLT bond dynamics predict SPY risk appetite, IWM small-cap patterns signal market sentiment, QQQ tech momentum indicates sector leadership</li>
+                        <li>This creates genuinely diverse error sources across market segments</li>
+                    </ul>
+
+                    <p><strong>Stage 2: Base Model Training</strong></p>
+                    <ul>
+                        <li>1,350 models trained via hyperparameter search</li>
+                        <li>324 selected based on Signal-to-Noise ratio (36 per ETF)</li>
+                    </ul>
+
+                    <p><strong>Stage 3: Meta-Learning</strong></p>
+                    <ul>
+                        <li>Single-ETF stacking: 36-dimensional meta-feature space</li>
+                        <li>Cross-ETF stacking: 324-dimensional meta-feature space</li>
+                        <li>Random Forest captures non-linear interactions</li>
+                    </ul>
+
+                    <p>This architecture ensures that feature engineering decisions don't contaminate model training, and base model predictions remain independent for effective meta-learning.</p>
+
+                    <h3>2.3 Base Model Training Configuration</h3>
+
+                    <p>I employ a comprehensive hyperparameter optimization strategy using Optuna and MLflow for experiment tracking.</p>
+
+                    <p>I select algorithms spanning linear (Logistic Regression) to non-linear (RF, XGB) to capture diverse inductive biases. Time decay configurations (0, 2, 5, 10) adapt to different regime persistence characteristics.</p>
+
+                    <p><strong>Time Decay Configurations:</strong></p>
+                    <ul>
+                        <li>Classification models: 0, 2, 5</li>
+                        <li>Regression models: 2, 5, 10</li>
+                    </ul>
+
+                    <p><strong>Algorithm Portfolio:</strong></p>
+                    <ul>
+                        <li>Classification: RandomForest, XGBoost, LogisticRegression, LogisticRegression+L1, LogisticRegression+L2</li>
+                        <li>Regression: RandomForestRegressor, LinearRegression, XGBoostRegressor</li>
+                    </ul>
+
+                    <p><strong>Feature Selection per Model:</strong></p>
+                    <ul>
+                        <li>PCA: 85%, 95% variance retention</li>
+                        <li>SelectKBest: [50, 100, 150] features</li>
+                        <li>Applied independently within each training fold</li>
+                    </ul>
+
+                    <h3>2.4 Systematic Model Search and Selection</h3>
+
+                    <p>I train 1,350 base models through exhaustive hyperparameter search, then select 324 high-performing models for meta-learning.</p>
+
+                    <p><strong>Training phase (1,350 models):</strong></p>
+                    <ul>
+                        <li>Each ETF: 150 models (105 classification + 45 regression)</li>
+                        <li>9 ETFs × 150 = 1,350 total base models</li>
+                        <li>Covers all combinations of: algorithms, time decays, feature selection methods</li>
+                    </ul>
+
+                    <p><strong>Selection phase (324 models):</strong></p>
+                    <ul>
+                        <li>Selection criterion: PR-AUC mean / PR-AUC std (Signal-to-Noise ratio)</li>
+                        <li>Threshold: Must exceed random baseline performance</li>
+                        <li>Per ETF: 18 CORE + 18 AUXILIARY (12 ADJACENT + 6 CONTRARIAN) = 36 total, maintaining 1:1 balance between direct signal and auxiliary targets</li>
+                        <li>Final meta-feature space: 324 predictions (36 per ETF × 9 ETFs)</li>
+                    </ul>
+
+                    <p>This approach ensures the meta-learner receives diverse, high-quality predictions rather than redundant or noisy signals. The 24% selection rate (324/1,350) proves that systematic search identifies genuinely informative models.</p>
+
+                    <h3>2.5 Temporal Validation and Meta-Learning</h3>
+
+                    <h4>2.5.1 Walk-Forward Validation Strategy</h4>
+                    <p>I implement expanding-window walk-forward validation advancing monthly:</p>
+                    <ul>
+                        <li>Fold 1: Train on 2015-01 to 2016-12 → Test on 2017-01</li>
+                        <li>Fold 2: Train on 2015-02 to 2017-01 → Test on 2017-02</li>
+                        <li>Fold 84: Train on 2021-01 to 2022-12 → Test on 2023-12</li>
+                    </ul>
+
+                    <p>Key properties: Overlapping training windows (each fold shares 23 months with previous fold), strict temporal independence (no test data in training windows), 84 independent tests across diverse market conditions (2017-2024).</p>
+
+                    <h4>2.5.2 Temporal Data Separation</h4>
+                    <ul>
+                        <li>Base Model Training: 2017-2023 (feature selection fitted on training data only)</li>
+                        <li>Meta-Learner Training: 2022-2023 (using base model predictions from this period)</li>
+                        <li>Final Testing: 2024 (completely held out, never seen during any training stage)</li>
+                    </ul>
+
+                    <h4>2.5.3 Meta-Learner Architecture</h4>
+                    <p>The meta-learner evaluates multiple algorithms: RandomForest (primary choice for non-linear interactions), XGBoost (alternative tree-based approach), LogisticRegression variants (linear baselines for comparison). The 324-dimensional meta-feature space requires sophisticated non-linear learning, validating the superiority of tree-based approaches over linear methods.</p>
+
+                    <p>Feature selection parameters (SelectKBest thresholds, PCA components) are fitted only on each fold's training data, ensuring no information leakage—the model selection process sees only historical information available at prediction time.</p>
+
+                    <h2 style="text-align: left;">3. Results and Validation</h2>
+
+                    <h3>3.1 Ablation Study: Individual Model Groups vs Full Ensemble</h3>
+
+                    <p>I validate the ensemble through systematic ablation testing across individual model groups:</p>
+
+                    <div style="text-align: center; margin: 20px 0;">
+                        <img src="../../asset/figure/projects/spy-breakout/stacking_comparison.png" alt="Ablation Study: Model Group Performance Comparison" style="width: 100%; max-width: 800px; margin: 0 auto; display: block;">
+                    </div>
+                    <p><strong>Individual Model Group Performance:</strong></p>
+                    <ul>
+                        <li>Full Ensemble: 95.6% PR-AUC (std: 6.8%, S/N: 14.0)</li>
+                        <li>Adjacent (0.3%): 75.1% PR-AUC (std: 20.3%, S/N: 3.7)</li>
+                        <li>Contrarian (-0.5%): 73.7% PR-AUC (std: 21.1%, S/N: 3.5)</li>
+                        <li>Adjacent (0.5%): 69.1% PR-AUC (std: 18.9%, S/N: 3.7)</li>
+                        <li>Core (0.4%): 65.8% PR-AUC (std: 26.8%, S/N: 2.5)</li>
+                        <li>Baseline: 42.0% PR-AUC (std: 9.6%, S/N: 4.4)</li>
+                    </ul>
+
+                    <p><strong>Key insights from ablation study:</strong>
+                    Each model group contributes meaningful signal above random baseline (42.0%), with individual groups achieving 65.8-75.1% performance. The full ensemble's 95.6% represents a 20+ percentage point improvement over the best individual group, demonstrating genuine complementary learning. Critically, individual groups show poor signal-to-noise ratios (S/N: 2.5-3.7) while the ensemble achieves excellent signal quality (S/N: 14.0), proving effective error diversification.</p>
+
+                    <h3>3.2 Model Group Independence Validation</h3>
+
+                    <p>I prove that no single group "memorized" the correct answer through risk-return analysis:</p>
+
+                    <p><strong>Performance parity across groups:</strong> Each group achieves moderate individual performance (65-75% range) when predicting the main 0.4% target. This validates that model groups provide complementary information from different perspectives rather than one group having privileged access to the solution.</p>
+
+                    <p><strong>Distinct risk-return positions:</strong> CORE, ADJACENT, and CONTRARIAN groups occupy different positions in performance-variance space, proving they capture orthogonal market dynamics rather than redundant signals.</p>
+
+                    <p>This independence validation demonstrates that the ensemble's 95.6% performance emerges from intelligent signal combination, not individual model superiority.</p>
+
+                    <h3>3.3 Algorithm Sensitivity: Linear vs Tree-Based Meta-Learners</h3>
+
+                    <div style="text-align: center; margin: 20px 0;">
+                        <img src="../../asset/figure/projects/spy-breakout/meta_learner_risk_return_analysis.png" alt="Meta-Learner Algorithm Comparison: Linear vs Tree-Based" style="width: 100%; max-width: 800px; margin: 0 auto; display: block;">
+                    </div>
+
+                    <p>I validate sophisticated learning through meta-learner algorithm comparison:</p>
+
+                    <p><strong>Performance gap analysis:</strong></p>
+                    <ul>
+                        <li>Tree-based methods (Random Forest): 95.6% ± 6.8% PR-AUC</li>
+                        <li>Linear methods (Logistic Regression with L1 regularization): 55.0% ± 15.0% PR-AUC</li>
+                        <li>40-percentage-point gap between approaches</li>
+                    </ul>
+
+                    <p><strong>Critical validation insight:</strong> If the ensemble exploited data leakage or simple correlations, linear methods would easily capture those direct relationships and perform similarly to tree-based methods. The dramatic performance difference proves the meta-learner learns genuine non-linear interactions between complementary signals.</p>
+
+                    <p><strong>Tree-based advantages for multi-target stacking:</strong></p>
+                    <ul>
+                        <li>Non-linear interactions between prediction groups</li>
+                        <li>Ordinal relationships in auxiliary target hierarchies</li>
+                        <li>Conditional logic ("if Group A disagrees with Group B, then...")</li>
+                        <li>Feature importance across heterogeneous meta-feature spaces</li>
+                    </ul>
+
+                    <p>Linear methods cannot capture the complex interactions between cross-ETF predictions and multi-target signals, validating the architectural choice.</p>
+
+                    <h3>3.4 Variance Reduction: Approaching Theoretical Limits</h3>
+
+                    <div style="text-align: center; margin: 20px 0;">
+                        <img src="../../asset/figure/projects/spy-breakout/variance_reduction_analysis.png" alt="Variance Reduction Analysis: Theoretical vs Empirical" style="width: 100%; max-width: 800px; margin: 0 auto; display: block;">
+                    </div>
+
+                    <p>I demonstrate genuine ensemble diversity through variance analysis:</p>
+
+                    <p><strong>Empirical variance reduction:</strong> 47% reduction in prediction variance while simultaneously improving mean performance. Individual models show high standard deviation (±12.8% - ± 13.7%) while the ensemble achieves low variance (±6.8%).</p>
+
+                    <p><strong>Theoretical validation:</strong> The variance reduction approaches the theoretical σ²/n limit, confirming that model errors are genuinely independent rather than correlated. This proves the ensemble isn't averaging similar predictions but combining truly diverse signals.</p>
+
+                    <p><strong>Signal-to-Noise improvement:</strong> 194% improvement in Signal-to-Noise ratio from baseline (4.4) and best individual model (4.8) to final ensemble (14.0), demonstrating fundamental improvement in prediction reliability.</p>
+
+                    <h3>3.5 Temporal Stability: Distribution Shift Robustness</h3>
+
+                    <div style="text-align: center; margin: 20px 0;">
+                        <img src="../../asset/figure/projects/spy-breakout/stability_analysis.png" alt="Temporal Stability Analysis: 2024 Performance" style="width: 100%; max-width: 800px; margin: 0 auto; display: block;">
+                    </div>
+
+                    <p>I validate real-world deployment readiness through temporal stability analysis:</p>
+
+                    <p><strong>Performance consistency:</strong> Cross-ETF Stacking ensemble maintains stable ~0.95-1.0 PR-AUC throughout 2024 despite dramatic regime changes. Actual breakout rates varied from 23.8% to 59.1% monthly, representing significant distribution shifts.</p>
+
+                    <p><strong>Comparison with alternatives:</strong> Individual models and simpler ensembles show volatile performance (PR-AUC fluctuating 0.4-0.8) during the same period, demonstrating the robustness advantage of cross-market diversification.</p>
+
+                    <p><strong>Regime change resilience:</strong> The ensemble's stability under distribution shift validates its ability to maintain consistent performance across varying market conditions, crucial for production deployment.</p>
+
+                    <h3>3.6 Out-of-Sample Generalization: 2024 Testing</h3>
+
+                    <p>2024 holdout testing achieves 95.6% ± 6.8% PR-AUC, matching cross-validation expectations and proving genuine generalization. The consistency between holdout results and cross-validation estimates confirms the model generalizes to truly unseen data rather than memorizing training patterns.</p>
+
+                    <p>This empirical validation proves the multi-target stacking framework delivers robust, reliable performance through genuine ensemble learning rather than statistical artifacts or overfitting.</p>
+
+                    <h2 style="text-align: left;">4. Theoretical Foundation & Related Work</h2>
+
+                    <h3>4.1 How This Differs from Existing Approaches</h3>
+
+                    <p><strong>Standard stacking (Wolpert 1992):</strong> Algorithmic diversity - train different algorithms (Random Forest, SVM, Neural Networks) on identical targets. Limited by shared target signal.</p>
+
+                    <p><strong>Multi-task learning (Caruana 1997):</strong> Joint optimization across related tasks with shared representations. Requires carefully designed architectures and shared feature spaces.</p>
+
+                    <p><strong>My contribution:</strong> Target diversity for error decorrelation. Train models on mathematically related but distinct targets (CORE: 0.4%, ADJACENT: 0.3%/0.5%, CONTRARIAN: -0.5%), then combine via meta-learner. Each group learns different aspects of the same underlying dynamics.</p>
+
+                    <h3>4.2 Variance Reduction Theory</h3>
+
+                    <p><strong>Theoretical expectation:</strong> σ²_ensemble ≈ σ²_base/k when model errors are weakly correlated.</p>
+
+                    <p><strong>Empirical validation:</strong> 47% variance reduction achieved while improving mean performance. Individual groups: ±12.8% - ±13.7% standard deviation. Ensemble: ±6.8% standard deviation, approaching theoretical limits for error independence.</p>
+
+                    <p><strong>Mechanism:</strong> Target diversity naturally decorrelates errors because models learn from different signal perspectives rather than redundant information.</p>
+
+                    <h3>4.3 Novel Contributions Summary</h3>
+
+                    <ol>
+                        <li><strong>Multi-target stacking framework:</strong> First systematic approach using target diversity rather than algorithmic diversity for ensemble learning</li>
+                        <li><strong>Cross-domain ensemble learning:</strong> Diverse asset classes (bonds, small-caps, tech) collectively predict SPY through complementary error patterns, even when individual ETF predictions are weak and noisy</li>
+                        <li><strong>Ordinal signal encoding via ADJACENT and CONTRARIAN models:</strong> Auxiliary targets (0.3%, 0.5%, -0.5%) capture ordinal relationships and opposing signals, providing richer information than binary classification</li>
+                        <li><strong>Regression for ranking discovery:</strong> Regression base models (predicting continuous breakout magnitude) create superior meta-features compared to classification base models (predicting binary outcomes), achieving 2.79 vs 2.39 Signal-to-Noise ratio. This counter-intuitive finding shows magnitude prediction encodes richer information for ensemble learning than probability estimation.</li>
+                    </ol>
+
+                    <h2 style="text-align: left;">5. Generalization & Limitations</h2>
+
+                    <h3>5.1 When This Approach Generalizes</h3>
+
+                    <p><strong>Multiple correlated targets exist naturally:</strong> Credit scoring: predict 60-day delinquency using auxiliary models trained on 30-day and 90-day thresholds. Medical prognosis: predict 12-month survival using models trained on 6-month and 24-month horizons. Customer analytics: predict 90-day churn using models trained on 30-day and 180-day engagement thresholds.</p>
+
+                    <p><strong>Targets have ordinal or complementary structure:</strong> ADJACENT targets (0.3%, 0.5%) capture ordinal relationships while CONTRARIAN targets (-0.5%) provide opposing signals. This structure enables systematic error decorrelation across the target space.</p>
+
+                    <p><strong>Sufficient data for both base and meta-learning:</strong> Multi-target stacking requires adequate samples for training base models on auxiliary targets plus sufficient meta-learning data. Here: 7 years base training, 24 months meta-learner validation.</p>
+
+                    <h3>5.2 Current Limitations</h3>
+
+                    <p><strong>Technical:</strong> High-dimensional regime (p > n) requires aggressive feature selection. Each base model must independently reduce dimensionality—here from 852 to 50-150 features—making feature engineering and selection strategy critical.</p>
+
+                    <p><strong>When approach fails:</strong> Auxiliary targets too correlated (redundant signals), too uncorrelated with primary target (noise), or when base models are too weak to extract any signal from auxiliary targets.</p>
+
+                    <p><strong>Conceptual:</strong> Needs domain knowledge to choose auxiliary targets. Selecting meaningful auxiliary targets (0.3%, 0.5%, -0.5% here) requires understanding of signal relationships - not automatically discoverable.</p>
+
+                    <p><strong>Practical:</strong> Implementation demonstrates ensemble methodology on financial data as a challenging non-stationary testbed. Production deployment in any domain requires additional engineering: execution logic specific to application context, computational optimization for latency constraints, and domain-specific risk management.</p>
+
+                    <p><strong>Statistical:</strong> Meta-learner complexity scales with number of base models. With 324-dimensional meta-feature space, validation data must be sufficient to learn cross-target interactions—here requiring 24 months (500+ samples). Insufficient validation data risks meta-learner overfitting to spurious patterns.</p>
+
+                    <h3>5.3 Future Directions</h3>
+
+                    <p><strong>Extend to other financial instruments:</strong> Test framework on individual stocks, commodities, forex where cross-market relationships may provide similar ensemble benefits.</p>
+
+                    <p><strong>Test on other domains with natural target hierarchies:</strong> Medical diagnosis (symptom severity levels), customer analytics (engagement intensity), manufacturing quality (defect classifications) where auxiliary targets occur naturally.</p>
+
+                    <p><strong>Theoretical analysis of auxiliary target selection:</strong> Develop principled methods to identify which auxiliary targets maximize error decorrelation. Can target selection be automated via information-theoretic criteria?</p>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

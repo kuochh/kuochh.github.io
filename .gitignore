@@ -12,12 +12,14 @@ Thumbs.db
 
 # Development files
 CLAUDE.md
+CLAUDE*.md
 README.md
 instructions.md
 template.js
 
 # Old card system (migrated to HTML)
 cards/
+archive/
 
 # Temporary files
 *.tmp
