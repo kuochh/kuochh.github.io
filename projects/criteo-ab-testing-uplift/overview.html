@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A/B Testing with Uplift Modeling and Causal Decomposition | Chia-Hung Kuo</title>
+    <link rel="stylesheet" href="../../asset/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>A/B Testing with Uplift Modeling and Causal Decomposition</h1>
+            <p class="subtitle">Criteo Ad Campaign Analysis</p>
+        </div>
+
+        <!-- Main Content Container -->
+        <div class="main-content">
+            <div class="content-area">
+                <!-- Navigation positioned inside content area -->
+                <div class="nav-container">
+                    <div class="nav-tabs">
+                        <a href="overview.html" class="nav-tab active">Overview</a>
+                        <a href="uplift.html" class="nav-tab">Uplift Modeling</a>
+                        <a href="decomposition.html" class="nav-tab">IV Solution</a>
+                    </div>
+                </div>
+
+                <!-- Overview Content -->
+                <div class="content-panel">
+                        <!-- Executive Summary Box -->
+                        <div style="border: 2px solid #2E7D32; border-radius: 8px; padding: 20px; margin-bottom: 30px; background-color: rgba(46, 125, 50, 0.08);">
+                            <h3 style="margin-top: 0; color: #1B5E20;">Executive Summary</h3>
+
+                            <p style="margin-bottom: 15px; font-weight: 500;"><strong>Challenge:</strong> Standard CATE identifies high-value users (0.1753 Qini, 5× conversion lift for top decile) but cannot guide bidding. Users with identical CATE scores require opposite bids depending on mechanism.</p>
+
+                            <p style="margin-bottom: 15px; font-weight: 500;"><strong>Solution:</strong> Instrumental variables decompose CATE into reachability P(E) vs responsiveness LATE(X), revealing why each user scores high.</p>
+
+                            <p style="margin-bottom: 0; font-weight: 500;"><strong>Result:</strong> 10% ranking tradeoff enables strategic bidding: low bids for reachable users, high bids for responsive users. Delivery optimization can recover this cost through better budget allocation.</p>
+                        </div>
+
+                        <h3>The Experimental Setup</h3>
+                        <p>This project analyzes a randomized controlled trial of a programmatic advertising campaign using the Criteo dataset (13.9M users). Users were randomly assigned to treatment (85%, eligible for ad auctions) or control (15%, never shown ads). The experiment exhibits severe non-compliance: only 3.6% of treatment-assigned users actually see ads due to auction losses, ad blockers, and technical constraints.</p>
+
+                        <div style="text-align: center; margin: 20px 0;">
+                            <pre style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto; font-size: 13px; line-height: 1.3; display: inline-block; text-align: left;">
+
+                       All Users (13.9M)
+                        /              \
+            Treatment (85%)          Control (15%)
+            /           \                  |
+    See ads (3.6%)   Never see ads    Never see ads
+           |           (81.4%)             |
+           ↓              ↓                ↓
+      Conversion      Conversion      Conversion
+        5.38%           0.12%            0.19%
+
+    Non-compliance: 96.4% of treatment-assigned never see ads
+<p style="margin-left: 20px; font-size: 14px; font-style: italic; color: #666;">
+    → <a href="https://github.com/kuochh/criteo-ab-testing-uplift/blob/main/notebooks/01_eda.ipynb" target="_blank" style="color: #495057; text-decoration: none; border-bottom: 1px dotted #495057;">View detailed randomization validation and EDA</a>
+</p>
+                            </pre>
+  
+                        </div>
+
+                        <h3>Baseline: Standard CATE Uplift Modeling</h3>
+                        <p>I implemented conditional average treatment effects (CATE) using meta-learners to identify high-value users for targeting. The X-Learner achieved <strong>0.1753 Qini coefficient</strong>, with the top 10% of targeted users converting at <strong>5× the control rate</strong> (0.96% vs 0.19% baseline).</p>
+
+                        <p>CATE successfully identifies who benefits most from <strong>ad campaign assignment.</strong> This works well for ranking users by expected conversion uplift—standard approach in uplift modeling.</p>
+
+                        <h3>The Limitation: CATE Can't Guide Bidding Strategy</h3>
+                        <p>However, CATE estimates the effect of <em>treatment assignment</em>, not the effect of actually seeing the ad. In this campaign, CATE conflates two distinct mechanisms:</p>
+
+<ul style="margin-left: 20px;">
+    <li><strong>Deliverability:</strong> Can we reach this user? (Win the auction, avoid ad blockers)</li>
+    <li><strong>Ad responsiveness:</strong> If the ad is delivered, how effective is it?</li>
+</ul>
+
+<p>For bidding optimization, we need to separate these. CATE provides a single uplift score measuring assignment effect, but two users with identical CATE scores may require opposite bidding strategies depending on which mechanism dominates:</p>
+                        <div style="background-color: #fff3e0; padding: 15px; border-left: 4px solid #ff9800; margin: 20px 0;">
+                            <p style="margin: 0 0 10px 0;"><strong>Example: Two users both with CATE = 0.004</strong></p>
+                            <ul style="margin: 0; padding-left: 20px;">
+                                <li><strong>User A:</strong> High CATE driven by high reachability P(E)=0.80 → <strong>bid low</strong> (already likely to win auction)</li>
+                                <li><strong>User B:</strong> High CATE driven by high responsiveness LATE=0.020 → <strong>bid aggressively</strong> (worth paying premium to win)</li>
+                            </ul>
+                        </div>
+
+                        <p>CATE treats these users identically—both get the same bid. We cannot optimize budget allocation without understanding <em>why</em> each user scores high: is it because they're easy to reach, or because they respond strongly to ads?</p>
+
+                        <h3>The Solution: CATE Decomposition via Instrumental Variables</h3>
+                        <p>To enable strategic bidding, I decompose CATE into two interpretable components using instrumental variables:</p>
+
+                        <div style="overflow-x: auto; margin: 20px 0;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background-color: #f5f5f5;">
+                                        <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Component</th>
+                                        <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">What It Measures</th>
+                                        <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Bidding Implication</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="border: 1px solid #ddd; padding: 12px;"><strong>P(E|T=1,X)</strong></td>
+                                        <td style="border: 1px solid #ddd; padding: 12px;">Probability of ad delivery (deliverability)</td>
+                                        <td style="border: 1px solid #ddd; padding: 12px;">High P(E) → bid low (already reachable)</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: 1px solid #ddd; padding: 12px;"><strong>LATE(X)</strong></td>
+                                        <td style="border: 1px solid #ddd; padding: 12px;">Treatment effect when ad delivered (responsiveness)</td>
+                                        <td style="border: 1px solid #ddd; padding: 12px;">High LATE → bid high (worth the cost)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <p>The decomposition reveals the mechanism behind each user's uplift score: <strong>CATE(X) = P(E|T=1,X) × LATE(X)</strong></p>
+
+                        <p><strong>Key finding:</strong> Deliverability P(E) alone achieves 95% of CATE performance, proving that exposure probability dominates treatment effect heterogeneity in this ad campaign.</p>
+
+                        <h3>Business Impact</h3>
+                        <p>Decomposition enables strategic bidding optimization impossible with black-box CATE:</p>
+
+                        <div style="overflow-x: auto; margin: 20px 0;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background-color: #f5f5f5;">
+                                        <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Approach</th>
+                                        <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Qini</th>
+                                        <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Performance</th>
+                                        <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Business Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="border: 1px solid #ddd; padding: 12px;"><strong>CATE (X-Learner)</strong></td>
+                                        <td style="border: 1px solid #ddd; padding: 12px;">0.1753</td>
+                                        <td style="border: 1px solid #ddd; padding: 12px;">100% (baseline)</td>
+                                        <td style="border: 1px solid #ddd; padding: 12px;">Ranking only, no bidding guidance</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: 1px solid #ddd; padding: 12px;"><strong>P(E)×LATE(X)</strong></td>
+                                        <td style="border: 1px solid #ddd; padding: 12px;">0.1580</td>
+                                        <td style="border: 1px solid #ddd; padding: 12px;">90%</td>
+                                        <td style="border: 1px solid #ddd; padding: 12px;">Enables differentiated bidding strategies</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <p><strong>Note:</strong> The 10% ranking cost represents worst-case performance without bidding optimization. In actual deployment, strategic bidding based on decomposed components can recover this cost through optimized budget allocation—requires bid/cost data to validate.</p>
+
+                        <!-- <h3>What Makes This Different</h3>
+                        <p>Most uplift modeling projects implement standard meta-learners and report metrics. This project:</p>
+                        <ul style="margin-left: 20px;">
+                            <li><strong>Identifies actionable limitation</strong> - CATE's single score hides mechanism differences critical for bidding optimization</li>
+                            <li><strong>Quantifies tradeoffs honestly</strong> - Reports 10% worst-case cost for strategic decomposition (not cherry-picked)</li>
+                            <li><strong>Applies causal inference rigor</strong> - Instrumental variables separate deliverability from responsiveness via LATE</li>
+                            <li><strong>Provides business framework</strong> - Quantified guidance for budget allocation based on mechanism decomposition</li>
+                            <li><strong>Demonstrates critical thinking</strong> - Delivery dominates (95%), decomposition enables optimization</li>
+                        </ul> -->
+
+                        <h3>What Makes This Different</h3>
+                        <p>This uplift modeling project demonstrates:</p>
+                        <ul style="margin-left: 20px;">
+                            <li>Identified that CATE's single score conflates two mechanisms—deliverability dominates 95% of predictions, obscuring true ad responsiveness</li>
+                            <li>Applied IV framework to decompose mechanisms, enabling differentiated bidding strategies impossible with black-box CATE</li>
+                            <li>Quantified honest tradeoffs: 10% ranking cost for strategic optimization capability, not cherry-picked metrics</li>
+                            <li>Connected technical decomposition to concrete business actions: bid high for responsive users, bid low for reachable users</li>
+                        </ul>
+
+                        <p>Directly applicable to ad auction optimization, marketplace pricing and matching, and experimentation with sequential treatments or non-compliance.</p>
+
+                        <h3>Continue Reading</h3>
+                        <p>This overview summarizes the project. For detailed analysis:</p>
+
+                        <div style="display: flex; gap: 20px; margin: 20px 0;">
+                            <div style="flex: 1; padding: 15px; background: #e3f2fd; border-left: 4px solid #2196F3; border-radius: 4px;">
+                                <h4 style="margin-top: 0;">Uplift Modeling</h4>
+                                <p style="margin-bottom: 10px; font-size: 14px;">Standard S/T/X/R Learners and limitations</p>
+                                <a href="uplift.html" style="color: #1976d2; font-weight: 500;">View Uplift Modeling →</a>
+                            </div>
+
+                            <div style="flex: 1; padding: 15px; background: #e8f5e9; border-left: 4px solid #388e3c; border-radius: 4px;">
+                                <h4 style="margin-top: 0;">Causal Solution</h4>
+                                <p style="margin-bottom: 10px; font-size: 14px;">IV decomposition and business optimization</p>
+                                <a href="decomposition.html" style="color: #2e7d32; font-weight: 500;">View Causal Decomposition →</a>
+                            </div>
+
+                            <div style="flex: 1; padding: 15px; background: #f3e5f5; border-left: 4px solid #9c27b0; border-radius: 4px;">
+                                <h4 style="margin-top: 0;">GitHub Repository</h4>
+                                <p style="margin-bottom: 10px; font-size: 14px;">All analysis code available on GitHub</p>
+                                <a href="https://github.com/kuochh/criteo-ab-testing-uplift" target="_blank" style="color: #7b1fa2; font-weight: 500;">View Repository →</a>
+                            </div>
+                        </div>
+
+                        <!-- <div style="text-align: center; margin: 30px 0;">
+                            <a href="uplift.html" style="display: inline-block; background-color: #2196F3; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: 500; margin-right: 10px;">View Baseline Analysis →</a>
+                            <a href="decomposition.html" style="display: inline-block; background-color: #2E7D32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: 500;">View Causal Solution →</a>
+                        </div> -->
+
+                        <!-- <div style="text-align: center; margin: 20px 0; padding: 15px; background-color: #f9f9f9; border-radius: 5px;">
+                            <p style="margin: 0; font-size: 14px; color: #666;">
+                                <strong>Dataset:</strong> <a href="https://ailab.criteo.com/ressources/" target="_blank">Criteo Uplift Modeling Dataset v2.1</a> |
+                                <strong>Code:</strong> <a href="https://github.com/kuochh/criteo-ab-testing-uplift" target="_blank">GitHub Repository</a>
+                            </p>
+                        </div> -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fixed Footer -->
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <span>© 2025 Chia-Hung Kuo</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

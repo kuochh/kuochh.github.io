@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Causal Decomposition Solution | Criteo A/B Testing Analysis | Chia-Hung Kuo</title>
+    <link rel="stylesheet" href="../../asset/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>A/B Testing with Uplift Modeling and Causal Decomposition</h1>
+            <p class="subtitle">Criteo Ad Campaign Analysis</p>
+        </div>
+
+        <!-- Main Content Container -->
+        <div class="main-content">
+            <div class="content-area">
+                <!-- Navigation positioned inside content area -->
+                <div class="nav-container">
+                    <div class="nav-tabs">
+                        <a href="overview.html" class="nav-tab">Overview</a>
+                        <a href="uplift.html" class="nav-tab">Uplift Modeling</a>
+                        <a href="decomposition.html" class="nav-tab active">IV Solution</a>
+                    </div>
+                </div>
+
+                <!-- Decomposition Content -->
+                <div class="content-panel">
+                    <!-- Brief Recap -->
+                    <div style="border: 2px solid #1976d2; border-radius: 8px; padding: 20px; margin-bottom: 30px; background-color: rgba(25, 118, 210, 0.08);">
+                        <h3 style="margin-top: 0; color: #1565c0;">Causal Decomposition Solution</h3>
+                        <p style="margin-bottom: 0; font-weight: 500;">CATE achieves 0.1753 Qini but cannot guide bidding—identical scores require opposite strategies. This page decomposes CATE = P(E) × LATE(X) using instrumental variables, trading 10% ranking performance for mechanism separation. Top 20% performance nearly unchanged. Heterogeneity in LATE(X) reveals which users justify aggressive bidding versus cost-efficient targeting.</p>
+                    </div>
+
+                    <!-- Part 1: The Decomposition Framework -->
+                    <h3>The Decomposition Framework</h3>
+
+                    <h4>Mathematical Decomposition</h4>
+                    <p>To separate deliverability from ad effectiveness, we decompose CATE into two components:</p>
+
+                    <div style="background-color: #f5f5f5; padding: 20px; border-radius: 5px; margin: 20px 0; font-family: monospace; font-size: 13px;">
+                        <div style="text-align: center; margin-bottom: 15px;">
+                            <strong style="font-size: 15px;">CATE(X) = E[Y|T=1,X] - E[Y|T=0,X] = P(E=1|T=1, X) x LATE(X) </strong>
+                        </div>
+                        
+                        <div style="text-align: left; max-width: 700px; margin: 0 auto; line-height: 1.8;">
+                            <!-- Step 1 -->
+                            <div style="margin-bottom: 10px;">
+                                Decompose E[Y|T=1,X] by exposure (law of total expectation):<br>
+                                = E[Y|E=1,T=1,X]·P(E=1|T=1,X) + E[Y|E=0,T=1,X]·P(E=0|T=1,X)
+                            </div>
+                            
+                            <!-- Step 2 -->
+                            <div style="margin-bottom: 10px;">
+                                Apply exclusion restriction (assignment affects Y only through E):<br>
+                                E[Y|E=0,T=1,X] = E[Y|E=0,X] and E[Y|T=0,X] = E[Y|E=0,X]
+                            </div>
+                            
+                            <!-- Step 3 -->
+                            <div style="margin-bottom: 10px;">
+                                Substitute and simplify:<br>
+                                = E[Y|E=1,X]·P(E=1|T=1,X) + E[Y|E=0,X]·[1-P(E=1|T=1,X)] - E[Y|E=0,X]<br>
+                                = E[Y|E=1,X]·P(E=1|T=1,X) - E[Y|E=0,X]·P(E=1|T=1,X)<br>
+                                = [E[Y|E=1,X] - E[Y|E=0,X]] · P(E=1|T=1,X)<br>
+                                = LATE(X) · P(E=1|T=1,X)
+                            </div>
+                            
+                            <!-- Final form -->
+                        </div>
+                        
+                        <!-- Definitions -->
+                        <div style="margin-top: 20px; padding-top: 15px; border-top: 2px solid #ddd; font-family: sans-serif; font-size: 14px; text-align: left; max-width: 650px; margin-left: auto; margin-right: auto;">
+                            <p style="margin: 5px 0;"><strong>P(E=1|T=1,X):</strong> Probability of ad delivery given assignment (deliverability)</p>
+                            <p style="margin: 5px 0;"><strong>LATE(X):</strong> Local Average Treatment Effect (ad effectiveness when delivered)</p>
+                        </div>
+
+                        <div style="margin-top: 15px; padding: 15px; background-color: #e3f2fd; border-left: 4px solid #1976d2; font-size: 14px; max-width: 700px; margin-left: auto; margin-right: auto;">
+                            <p style="margin: 0 0 10px 0;"><strong>In plain English:</strong> CATE measures the effect of ad campaign assignment on conversion. Under exclusion restriction (assignment affects conversion only through exposure), CATE decomposes into two interpretable components: the probability a user sees the ad when assigned (deliverability) times the conversion effect when the ad is actually delivered (ad effectiveness).</p>
+                            
+                            <p style="margin: 0; font-size: 13px; color: #555;"><strong>Caveat:</strong> Exclusion restriction is an assumption that's fundamentally untestable. It fails if assignment has indirect effects; for example, if users share ads through word-of-mouth or repost content, creating spillover effects to non-exposed users. In this campaign, exclusion restriction is reasonable: control users never see ads, and display ads rarely generate viral sharing.</p>
+                        </div>
+                    </div>
+
+                    <p>This separates <strong>"Can we reach them?"</strong> (deliverability) from <strong>"Do they respond when reached?"</strong> (responsiveness).</p>
+
+                    <h4>Instrumental Variables Approach</h4>
+                    <p>Random treatment assignment T serves as an instrumental variable for actual exposure E. The IV framework requires three assumptions, all satisfied by this experiment:</p>
+
+                    <ul style="margin-left: 20px;">
+                        <li><strong>Randomization:</strong> Treatment assignment is random (verified: SMD < 0.1 across all covariates)</li>
+                        <li><strong>Exclusion restriction:</strong> Assignment affects conversions only through ad exposure (reasonable: control users never see ads)</li>
+                        <li><strong>Monotonicity:</strong> Assignment doesn't prevent exposure (true: treatment enables auction participation)</li>
+                    </ul>
+
+                    <h4>Implementation</h4>
+                    <p>After deriving the decomposition, we estimate each component separately.</p>
+
+                    <p><strong>Step 1: Estimate P(E|T=1,X) - Deliverability</strong></p>
+                    <p>Train an XGBoost binary classifier on the treatment group (train/validation sets) with grid search over learning rate, scale_pos_weight, and max_depth. Apply this trained model to all test users to get P(E|T=1,X) estimates—the probability each user would see an ad if assigned to treatment.</p>
+
+                    <p><strong>Step 2: Estimate LATE(X) - Ad Effectiveness</strong></p>
+                    <p>Estimate heterogeneous treatment effects using EconML's DMLIV (Double Machine Learning IV estimator) with 'auto' model selection. DMLIV uses treatment assignment T as an instrument for actual exposure E, with automatic selection of best-fitting models (linear or forest) for outcome, treatment, and instrument stages. This isolates the causal effect of ad exposure on conversion.</p>
+
+                    <p>The product P(E|T=1,X) × LATE(X) approximates CATE(X) while separating deliverability from responsiveness for strategic bidding.</p>
+                                        
+                    <p style="margin-left: 20px; font-size: 14px; font-style: italic; color: #666;">
+                        → <a href="https://github.com/kuochh/criteo-ab-testing-uplift/blob/main/notebooks/03_exposure_late.ipynb" target="_blank" style="color: #495057; text-decoration: none; border-bottom: 1px dotted #495057;">View IV decomposition implementation and validation</a>
+                    </p>
+
+                    <!-- Part 2: Performance Evaluation -->
+                    <h3>Performance Evaluation</h3>
+
+                    <p>Decomposition trades 10% ranking performance for strategic optimization capability. This represents worst-case performance without bidding optimization—actual deployment with differentiated bids could recover or exceed this cost.</p>
+
+                    <div style="overflow-x: auto; margin: 20px 0;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background-color: #f5f5f5;">
+                                    <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Approach</th>
+                                    <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Qini</th>
+                                    <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">% of CATE</th>
+                                    <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">What It Measures</th>
+                                    <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Business Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="border: 1px solid #ddd; padding: 12px;"><strong>CATE (X-Learner)</strong></td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">0.1753</td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">100%</td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">Assignment effect</td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">User ranking only</td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid #ddd; padding: 12px;"><strong>P(E) only</strong></td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">0.1668</td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">95%</td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">Deliverability alone</td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">Shows exposure dominates</td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid #ddd; padding: 12px;"><strong>P(E)×LATE(X)</strong></td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">0.1580</td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">90%</td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">Deliverability × Responsiveness</td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">Strategic bidding</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="text-align: center; margin: 20px 0;">
+                        <img src="../../asset/figure/projects/ab-testing/cate_late_uplift.png" alt="CATE vs Decomposition Performance Comparison" style="width: 100%; margin: 20px auto; display: block;">
+                        <p style="margin: 10px 0 0 0; font-size: 14px; color: #666; font-style: italic;">Uplift curves comparing CATE baseline with decomposition approaches. P(E) alone achieves 95% of CATE performance, proving deliverability dominates. Full decomposition achieves 90%, trading 10% ranking performance for strategic bidding capability.</p>
+                    </div>
+
+                    <h4>Key Findings</h4>
+                    <p><strong>1. Deliverability dominates:</strong> P(E) alone captures 95% of CATE performance, proving ad delivery is the primary bottleneck. With 3.6% exposure rate, reaching users constrains performance—even highly responsive users contribute little if we can't deliver ads to them.</p>
+
+                    <p><strong>2. Full decomposition: 90% of CATE:</strong> The 10% ranking cost is worst-case without bidding optimization. Actual deployment could recover this through strategic budget allocation—not measurable without bid/cost data in this dataset.</p>
+                    
+                    <p><strong>3. LATE reveals high-ROI segments:</strong> Mean LATE is 2.86pp (24× ITT), ranging from -7pp to 48pp. Some users are highly responsive when reached — worth aggressive bidding. </p>
+
+                    <p style="margin-left: 20px; font-size: 14px; font-style: italic; color: #666;">
+                        → <a href="https://github.com/kuochh/criteo-ab-testing-uplift/blob/main/notebooks/03_exposure_late.ipynb" target="_blank" style="color: #495057; text-decoration: none; border-bottom: 1px dotted #495057;">View detailed decomposition results and validation</a>
+                    </p>
+
+                    <!-- Part 3: Business Application -->
+                    <h3>Business Application: Strategic Optimization</h3>
+
+                    <p>Decomposition reveals mechanism differences that enable strategic optimization—not measurable in this dataset (no bid/cost data) but actionable in production environments. Consider three users with identical CATE scores:</p>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0;">
+                        <!-- User A -->
+                        <div style="border: 2px solid #1976d2; border-radius: 8px; padding: 15px; background-color: rgba(25, 118, 210, 0.05);">
+                            <h4 style="margin-top: 0; color: #1565c0;">User A: High Deliverability</h4>
+                            <p style="margin: 5px 0; font-family: monospace; font-size: 13px;">CATE: 0.004 | P(E): 0.80 | LATE: 0.005</p>
+                            <p style="margin: 10px 0 5px 0;"><strong>Mechanism:</strong> Already reachable (wins 80% of auctions)</p>
+                            <p style="margin: 5px 0;"><strong>Optimization:</strong> Focus on cost efficiency—minimize bid to save budget</p>
+                        </div>
+
+                        <!-- User B -->
+                        <div style="border: 2px solid #2e7d32; border-radius: 8px; padding: 15px; background-color: rgba(46, 125, 50, 0.05);">
+                            <h4 style="margin-top: 0; color: #1b5e20;">User B: High Responsiveness</h4>
+                            <p style="margin: 5px 0; font-family: monospace; font-size: 13px;">CATE: 0.004 | P(E): 0.20 | LATE: 0.020</p>
+                            <p style="margin: 10px 0 5px 0;"><strong>Mechanism:</strong> Hard to reach, highly responsive (4× LATE)</p>
+                            <p style="margin: 5px 0;"><strong>Optimization:</strong> Maximize delivery—increase bid to secure impression</p>
+                        </div>
+
+                        <!-- User C -->
+                        <div style="border: 2px solid #757575; border-radius: 8px; padding: 15px; background-color: rgba(117, 117, 117, 0.05);">
+                            <h4 style="margin-top: 0; color: #424242;">User C: Balanced</h4>
+                            <p style="margin: 5px 0; font-family: monospace; font-size: 13px;">CATE: 0.004 | P(E): 0.50 | LATE: 0.008</p>
+                            <p style="margin: 10px 0 5px 0;"><strong>Mechanism:</strong> Average deliverability and response</p>
+                            <p style="margin: 5px 0;"><strong>Optimization:</strong> Standard targeting—baseline bid strategy</p>
+                        </div>
+                    </div>
+
+                    <div style="background-color: #fff3e0; padding: 15px; border-left: 4px solid #ff9800; margin: 20px 0;">
+                        <p style="margin: 0;"><strong>CATE treats these identically</strong> (same score) → <strong>Decomposition enables differentiation</strong> (opposite strategies for A vs B)</p>
+                    </div>
+
+                    <p>This differentiation is impossible with CATE's single score—both User A and User B would receive identical bids despite requiring opposite strategies.</p>
+
+                    <h4>Production Applications</h4>
+                    <p>In business settings with bid/cost data, decomposition enables:</p>
+                    <ul style="margin-left: 20px;">
+                        <li><strong>Dynamic bidding:</strong> Adjust bids based on P(E) and LATE—maximize ROI, not just reach</li>
+                        <li><strong>Delivery channel optimization:</strong> Allocate budget across channels based on deliverability constraints</li>
+                        <li><strong>Creative personalization:</strong> Target high-LATE users with premium creative</li>
+                        <li><strong>Budget allocation:</strong> Concentrate spend where bidding matters most (high-LATE, low-P(E))</li>
+                    </ul>
+
+                    <p style="margin-top: 15px; font-size: 14px; color: #666;">These optimizations apply to auction environments with severe non-compliance. In perfect-compliance settings (email, direct mail), standard CATE suffices for ranking.</p>
+
+                    <h4>Budget Allocation Framework</h4>
+                    <p>Strategic framework based on P(E) and LATE quadrants:</p>
+
+                    <div style="text-align: center; margin: 20px 0;">
+                        <pre style="background-color: #f5f5f5; padding: 20px; border-radius: 5px; overflow-x: auto; font-size: 12px; line-height: 1.6; display: inline-block; text-align: left;">
+                           High LATE
+                               ↑
+                               |
+      Low P(E), High LATE      |     High P(E), High LATE
+      → Bid HIGH               |     → Bid MODERATE
+        Worth winning          |       Already winning
+                               |
+   ────────────────────────────┼────────────────────────────
+                               |
+      Low P(E), Low LATE       |     High P(E), Low LATE
+      → Don't bid              |     → Bid LOW
+        Low value              |       Minimal budget
+                               |
+                               ↓
+                           Low LATE
+                        </pre>
+                    </div>
+
+                    <h4>What LATE Reveals</h4>
+                    <p>LATE measures ad effectiveness when delivered. User-level heterogeneity in LATE(X) enables critical optimization:</p>
+
+                    <ul style="margin-left: 20px;">
+                        <li><strong>High heterogeneity:</strong> LATE ranges -7pp to 48pp—massive variation in ad response</li>
+                        <li><strong>Dilution from non-compliance:</strong> Mean LATE (2.86pp) is 24× larger than ITT (0.12pp)</li>
+                        <li><strong>Creative optimization:</strong> Identifies segments for personalized messaging</li>
+                        <li><strong>ROI targeting:</strong> Separates high-responders from auction-winners for strategic allocation</li>
+                    </ul>
+
+                    <p>LATE heterogeneity is the key business insight: users differ dramatically in how they respond to ads when reached. CATE cannot reveal this because it measures assignment effects, not ad effectiveness.</p>
+
+                    <!-- Part 5: Limitations & Future Work -->
+                    <h3>Limitations</h3>
+
+                    <h4>What We Cannot Measure</h4>
+                    <ul style="margin-left: 20px;">
+                        <li><strong>ROI impact:</strong> Dataset lacks bid/cost data—cannot validate if strategic bidding recovers the 10% ranking cost or improves profitability</li>
+                        <li><strong>IV assumptions:</strong> Exclusion restriction (assignment affects outcomes only through exposure) is standard assumption in IV analysis but untestable</li>
+                        <li><strong>Binary outcomes:</strong> Conversion is 0/1, ignoring conversion value heterogeneity—some conversions worth more than others</li>
+                    </ul>
+
+                    <h4>Potential Extensions</h4>
+                    <ul style="margin-left: 20px;">
+                        <li><strong>Non-linear decomposition:</strong> Allow interactions between P(E) and LATE—e.g., CATE = f(P(E), LATE, P(E)×LATE) to capture non-multiplicative effects</li>
+                        <li><strong>Value-based targeting:</strong> Model expected revenue instead of binary conversion—enables true ROI optimization, not just conversion maximization</li>
+                        <li><strong>A/B testing with cost data:</strong> Compare CATE-based vs decomposition-based bidding in live environment to measure actual profit impact</li>
+                    </ul>
+
+                <!-- Project Summary Box -->
+                <div style="border: 2px solid #2e7d32; border-radius: 8px; padding: 20px; margin: 30px 0 20px 0; background-color: rgba(46, 125, 50, 0.08);">
+                    <h3 style="margin-top: 0; color: #1b5e20;">What This Project Achieved</h3>
+
+                    <p style="margin-bottom: 15px;"><strong>Experimental Validation:</strong> Verified proper randomization (SMD < 0.1 across all covariates) in 13.9M user RCT with severe non-compliance (3.6% exposure rate).</p>
+
+                    <p style="margin-bottom: 15px;"><strong>CATE Baseline:</strong> Implemented S/T/X/R meta-learners achieving 0.1753 Qini (X-Learner), with top 10% converting at 5× control rate. Discovered CATE predictions correlate strongly with exposure probability - conflating deliverability with responsiveness.</p>
+
+                    <p style="margin-bottom: 15px;"><strong>Causal Decomposition:</strong> Used instrumental variables to decompose CATE into P(E) × LATE(X). Found deliverability dominates (P(E) alone = 95% of CATE performance), while full decomposition achieves 90% of baseline—trading 10% ranking performance for mechanism separation that enables differentiated bidding.</p>
+
+                    <p style="margin-bottom: 20px;"><strong>Business Impact:</strong> Quantified the performance-interpretability tradeoff. Cannot measure ROI improvement without bid/cost data, but decomposition enables strategic optimization impossible with black-box CATE: low bids for reachable users, aggressive bids for high-responders.</p>
+
+                    <div style="text-align: center;">
+                        <a href="https://github.com/kuochh/criteo-ab-testing-uplift" target="_blank" style="display: inline-block; background-color: #2e7d32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: 500; transition: background-color 0.3s;">View Complete Analysis on GitHub →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fixed Footer -->
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <span>© 2025 Chia-Hung Kuo</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

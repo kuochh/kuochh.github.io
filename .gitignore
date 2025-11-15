@@ -33,3 +33,7 @@ archive/
 
 # Log files
 *.log
+
+temp*
+
+.gitignore

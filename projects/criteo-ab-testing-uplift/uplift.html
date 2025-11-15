@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uplift Modeling Baseline | Criteo A/B Testing Analysis | Chia-Hung Kuo</title>
+    <link rel="stylesheet" href="../../asset/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>A/B Testing with Uplift Modeling and Causal Decomposition</h1>
+            <p class="subtitle">Criteo Ad Campaign Analysis</p>
+        </div>
+
+        <!-- Main Content Container -->
+        <div class="main-content">
+            <div class="content-area">
+                <!-- Navigation positioned inside content area -->
+                <div class="nav-container">
+                    <div class="nav-tabs">
+                        <a href="overview.html" class="nav-tab">Overview</a>
+                        <a href="uplift.html" class="nav-tab active">Uplift Modeling</a>
+                        <a href="decomposition.html" class="nav-tab">IV Solution</a>
+                    </div>
+                </div>
+
+                <!-- Uplift Content -->
+                <div class="content-panel">
+                    <!-- Brief Recap -->
+                    <div style="border: 2px solid #1976d2; border-radius: 8px; padding: 20px; margin-bottom: 30px; background-color: rgba(25, 118, 210, 0.08);">
+                        <h3 style="margin-top: 0; color: #1565c0;">Uplift Modeling</h3>
+                        <p style="margin-bottom: 0; font-weight: 500;">CATE achieves strong targeting (0.1753 Qini, top 10% converts at 5× control rate) but reveals a critical limitation: predictions correlate strongly with exposure probability. With 96.4% non-compliance, CATE conflates deliverability with responsiveness—limiting bidding optimization in auction environments.</p>
+                    </div>
+
+
+                    <!-- Part 1: Experimental Validation -->
+                    <h3>Experimental Validation</h3>
+                    <p>Before estimating treatment effects, we must verify this is a proper randomized controlled trial. Valid causal inference requires that treatment assignment is truly random—any systematic differences between groups would confound our results.</p>
+
+                    <h4>Randomization Check</h4>
+                    <p>All 12 baseline covariates show standardized mean differences (SMD) < 0.1 between treatment and control groups. While t-tests and KS tests detect statistically significant differences (a consequence of large sample size), the effect sizes are negligible—confirming proper randomization and validating causal inference.</p>
+
+                    <h4>Non-compliance Analysis</h4>
+                    <p>The experiment exhibits severe non-compliance due to real-world advertising constraints (auction losses, ad blockers, technical failures):</p>
+                    <ul style="margin-left: 20px;">
+                        <li><strong>Treatment group:</strong> 85% assigned → only 3.6% actually exposed to ads</li>
+                        <li><strong>Control group:</strong> 15% assigned → 0% exposed (by design)</li>
+                        <li><strong>Key finding:</strong> 96.4% of treatment-assigned users never see ads despite assignment</li>
+                    </ul>
+
+                    <div style="text-align: center; margin: 20px 0;">
+                        <pre style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto; font-size: 13px; line-height: 1.3; display: inline-block; text-align: left;">
+                       All Users (13.9M)
+                        /              \
+            Treatment (85%)          Control (15%)
+            Exposure: 3.6%           Exposure: 0%
+                   ↓                      ↓
+            Conversion: 0.31%      Conversion: 0.19%
+                        </pre>
+                    </div>
+
+                    <h4>Intent-to-Treat (ITT) Effects</h4>
+                    <p>The overall ITT effect is 0.12pp (0.31% - 0.19% with p-value < 0.001)—statistically significant but small in magnitude because 96.4% non-compliance dilutes the signal. This motivates estimating heterogeneous treatment effects: if we can identify which users actually benefit from targeting, we can concentrate budget on high-uplift segments.</p>
+
+                    <p style="margin-left: 20px; font-size: 14px; font-style: italic; color: #666;">
+                        → <a href="https://github.com/kuochh/criteo-ab-testing-uplift/blob/main/notebooks/01_eda.ipynb" target="_blank" style="color: #495057; text-decoration: none; border-bottom: 1px dotted #495057;">View detailed randomization validation and EDA</a>
+                    </p>
+
+                    <!-- Part 2: Standard CATE Baseline -->
+                    <h3>Baseline: Standard CATE Uplift Modeling</h3>
+
+                    <p>With randomization confirmed, we can now estimate treatment effects with confidence. The challenge: identify which users benefit most from targeting despite 96.4% non-compliance.</p>
+
+                    <h4>Meta-Learner Approach</h4>
+                    <p>Conditional average treatment effects (CATE) estimate <strong>each user's expected conversion lift from campaign assignment</strong> based on their characteristics. To find the best approach for this data, I compared four meta-learner architectures—algorithms that combine machine learning models to predict individual-level uplift:</p>
+
+                    <ul style="margin-left: 20px;">
+                        <li><strong>S-Learner:</strong> Single model with treatment as a feature</li>
+                        <li><strong>T-Learner:</strong> Separate models for treatment and control groups</li>
+                        <li><strong>X-Learner:</strong> T-Learner enhanced with propensity weighting (handles imbalanced assignment)</li>
+                        <li><strong>R-Learner:</strong> Uses Robinson transformation for doubly robust estimation</li>
+                    </ul>
+
+                    <p>I implemented all four using EconML with XGBoost base learners, following a 60/20/20 train/validation/test split and a simple grid search to mimic production environment. I also implemented all four meta-learners from scratch to understand their mechanics beyond just library calls. This page focuses on results; for algorithm details and causal inference, see the appendix here: </p>
+
+                    <p style="margin-left: 20px; font-size: 14px; font-style: italic; color: #666;">
+                        → <a href="https://github.com/kuochh/criteo-ab-testing-uplift/blob/main/notebooks/appendix_learners.ipynb" target="_blank" style="color: #495057; text-decoration: none; border-bottom: 1px dotted #495057;">View detailed meta-learner implementations and theory</a>
+                    </p>
+
+                    <h4>X-Learner Performance</h4>
+                    <p>The X-Learner achieved the best performance (Qini coefficient: 0.1753), outperforming other meta-learners because it explicitly handles our 85/15 treatment imbalance through propensity score weighting. The top 10% of targeted users converted at <strong>5× the control rate</strong> (0.96% vs 0.19%), demonstrating strong targeting capability. However, this ranking success masks a fundamental problem for bidding optimization.</p>
+
+                    <p>The uplift curve below shows cumulative uplift (y-axis) as we target more users (x-axis). The X-Learner's steeper curve indicates superior targeting efficiency—it concentrates uplift in the top-ranked users. All four meta-learners significantly outperform random targeting (diagonal line), validating the CATE approach.</p>
+
+                    <div style="text-align: center; margin: 20px 0;">
+                        <img src="../../asset/figure/projects/ab-testing/uplift_learners.png" alt="Meta-learner performance comparison" style="width: 100%; margin: 20px auto; display: block;">
+                        <p style="margin: 10px 0 0 0; font-size: 14px; color: #666; font-style: italic;">Uplift curves showing cumulative gain across all meta-learners. Steeper curves = better targeting efficiency. X-Learner (green) achieves highest performance.</p>
+                    </div>
+
+                    <h4>Decile Analysis: Validating CATE Rankings</h4>
+
+                    <p>These aggregate metrics are promising, but do high CATE scores actually predict high uplift? To validate the rankings, I sorted all users by predicted CATE and divided them into 10 equal groups (deciles), then calculated actual treatment-control differences for each group.</p>
+
+                    <p>The X-Learner demonstrates strong ranking capability: the <strong>top 10% achieve 0.77pp uplift</strong> (6.4× the 0.12pp average ITT), while the <strong>bottom 90% fall significantly below the ITT baseline</strong>, with the bottom decile at just 0.01pp. This bidirectional separation proves CATE effectively ranks users—it identifies who to target aggressively (top 10%) and who to avoid (bottom 90%, where treatment may be neutral or negative). Only the top decile exceeds random assignment performance, enabling selective targeting that concentrates budget where it matters most.</p>
+
+                    <div style="text-align: center; margin: 20px 0;">
+                        <img src="../../asset/figure/projects/ab-testing/uplift_decile.png" alt="Uplift by CATE Decile Analysis" style="width: 100%; margin: 20px auto; display: block;">
+                        <p style="margin: 10px 0 0 0; font-size: 14px; color: #666; font-style: italic;">Uplift by decile for all meta-learners. Top decile shows strong uplift (0.77pp for X-Learner), while bottom deciles fall below random baseline (dashed line at 0.12pp ITT).</p>
+                    </div>
+
+                    <p style="margin-left: 20px; font-size: 14px; font-style: italic; color: #666;">
+                        → <a href="https://github.com/kuochh/criteo-ab-testing-uplift/blob/main/notebooks/02_uplift_cate.ipynb" target="_blank" style="color: #495057; text-decoration: none; border-bottom: 1px dotted #495057;">View CATE implementation and detailed evaluation</a>
+                    </p>
+
+                    <!-- Part 4: The Discovery -->
+                    <h3>The Discovery: CATE Measures Assignment, Not Ad Effectiveness</h3>
+                    
+                    <h4>The Core Problem</h4>
+                    <p>CATE estimates the effect of <strong>campaign assignment</strong>, not the effect of <strong>actually seeing the ad</strong>. With 96.4% non-compliance, these are fundamentally different:</p>
+
+                    <ul style="margin-left: 20px;">
+                        <li><strong>What CATE measures:</strong> Intent-to-treat (ITT) effect—outcome difference between assigned vs not assigned</li>
+                        <li><strong>What we need for business:</strong> Local average treatment effect (LATE)—conversion lift when ad is actually delivered</li>
+                    </ul>
+
+                    <p>CATE conflates two mechanisms: whether we can <strong>reach</strong> the user (win the ad auction) with how they <strong>respond</strong> when reached (ad effectiveness). The correlation between CATE and exposure probability is strong (correlation > 0.5), showing that CATE estimates the effect of <strong>ad campaign assignment</strong>, dominated by <strong>deliverability</strong> rather than ad responsiveness.</p>
+                    
+                    <div style="text-align: center; margin: 20px 0;">
+                        <img src="../../asset/figure/projects/ab-testing/cate_exposure.png" alt="CATE vs Exposure Probability Correlation" style="width: 100%; margin: 20px auto; display: block;">
+                        <p style="margin: 10px 0 0 0; font-size: 14px; color: #666; font-style: italic;">CATE predictions strongly correlate with exposure probability, proving CATE is dominated by deliverability rather than ad responsiveness.</p>
+                    </div>
+                    <h4>What This Means</h4>
+                    <p>CATE is a signal that mixes two distinct signals:</p>
+                    <ol style="margin-left: 20px;">
+                        <li><strong>Deliverability P(E|T=1,X):</strong> Probability user can be reached (auction win probability, ad blocker avoidance)</li>
+                        <li><strong>Responsiveness LATE(X):</strong> Conversion effect when ad is actually delivered</li>
+                    </ol>
+                    <h4>Why This Matters for Business - Ad Auction Example</h4>
+                    <p>Two users with identical CATE scores may need opposite bidding strategies:</p>
+
+                    <div style="overflow-x: auto; margin: 20px 0;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background-color: #f5f5f5;">
+                                    <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">User</th>
+                                    <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">CATE</th>
+                                    <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">P(E)</th>
+                                    <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">LATE</th>
+                                    <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Mechanism</th>
+                                    <th style="border: 1px solid #ddd; padding: 12px; text-align: left;">Optimal Bid</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">A</td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">0.004</td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">0.80</td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">0.005</td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">High deliverability</td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;"><strong>Low</strong> (already reachable)</td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">B</td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">0.004</td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">0.20</td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">0.020</td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;">High responsiveness</td>
+                                    <td style="border: 1px solid #ddd; padding: 12px;"><strong>High</strong> (worth the cost)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="background-color: #fff3e0; padding: 15px; border-left: 4px solid #ff9800; margin: 20px 0;">
+                        <p style="margin: 0;"><strong>The Problem:</strong> CATE provides a single score → treats both users identically → cannot optimize bidding strategy based on CATE</p>
+                    </div>
+
+                    <h4>Using CATE for Bidding</h4>
+                    <ul style="margin-left: 20px;">
+                        <li>In programmatic auctions, we need to know <strong>HOW MUCH</strong> to bid, not just <strong>WHO</strong> to target</li>
+                        <li><strong>User A:</strong> Already likely to win auction at low bid → save budget</li>
+                        <li><strong>User B:</strong> Must win auction to see high response → bid aggressively</li>
+                        <li><strong>CATE's limitation:</strong> Single score cannot distinguish these strategies, limiting ROI optimization</li>
+                    </ul>
+
+                    <!-- Transition to Decomposition -->
+                    <h3>The Solution: Decomposing CATE</h3>
+                    <div style="border: 2px solid #2e7d32; border-radius: 8px; padding: 20px; margin: 20px 0; background-color: rgba(46, 125, 50, 0.08);">
+                        <p style="margin-bottom: 15px; font-weight: 500;">To enable bidding optimization, I separate deliverability from ad responsiveness. Using instrumental variables, decomposition enables:</p>
+                        <ul style="margin-bottom: 20px;">
+                            <li>Identifying <em>why</em> each user has high uplift (reachable vs responsive)</li>
+                            <li>Differentiated bidding strategies based on mechanism</li>
+                            <li>Strategic budget allocation optimized for auction environments</li>
+                        </ul>
+
+                        <div style="text-align: center;">
+                            <a href="decomposition.html" style="display: inline-block; background-color: #2e7d32; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: 500; transition: background-color 0.3s;">View Causal Decomposition Solution →</a>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fixed Footer -->
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <span>© 2025 Chia-Hung Kuo</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
