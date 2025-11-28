@@ -32,7 +32,7 @@
                         <!-- Methodological Contribution Box -->
                         <div style="border: 2px solid #2E7D32; border-radius: 8px; padding: 20px; margin-bottom: 30px; background-color: rgba(46, 125, 50, 0.08);">
                             <h3 style="margin-top: 0; color: #1B5E20;">Novel Methodological Contribution</h3>
-                            <p style="margin-bottom: 0; font-weight: 500;">I propose <strong>multi-target stacking</strong>—a novel ensemble framework that transcends the single-target constraint of traditional stacking by systematically exploiting target diversity for error decorrelation. Validated on non-stationary financial time series: <strong>95.6% PR-AUC vs 60.8% for traditional stacking (57% improvement)</strong>.</p>
+                            <p style="margin-bottom: 0; font-weight: 500;">I propose <strong>multi-target stacking</strong>, a novel ensemble framework that transcends the single-target constraint of traditional stacking by systematically exploiting target diversity for error decorrelation. Validated on non-stationary financial time series: <strong>95.6% PR-AUC vs 60.8% for traditional stacking (57% improvement)</strong>.</p>
                         </div>
                         <!-- Performance Comparison Box -->
                         <div style="border: 2px solid #2196F3; border-radius: 8px; padding: 20px; margin-bottom: 30px; background-color: rgba(33, 150, 243, 0.08);">
@@ -70,12 +70,12 @@
                             </pre>
                         </div>
 
-                        <p><strong>Error Decorrelation Mechanism</strong>: While auxiliary targets are correlated, <strong> predictions errors are weakly correlated</strong>. Models trained on different targets make different mistakes—they respond to distinct feature patterns and dynamics. This enables theoretical variance reduction.</p>
+                        <p><strong>Error Decorrelation Mechanism</strong>: While auxiliary targets are correlated, <strong> predictions errors are weakly correlated</strong>. Models trained on different targets make different mistakes. They respond to distinct feature patterns and dynamics. This enables theoretical variance reduction.</p>
 
                         <!-- <p><strong>Generalizability</strong>: This approach applies to any domain with naturally occurring auxiliary targets: medical prognosis (6/12/24-month horizons), customer analytics (30/90/180-day thresholds), or manufacturing quality (defect severity levels).</p> -->
 
                         <h3>Validation Strategy Using Financial Data</h3>
-                        <p>While this framework is not finance-specific, I demonstrate multi-target stacking on SPY breakout prediction—a binary classification task that exploits natural threshold-based auxiliary targets inherent to financial price movements. Financial markets provide an ideal testbed for validating multi-target stacking robustness. Non-stationary dynamics, extreme distribution shifts, and high-frequency data create adversarial conditions that stress-test the framework. Successful validation here provides convincing evidence for broader applicability. <p> 
+                        <p>While this framework is not finance-specific, I demonstrate multi-target stacking on SPY breakout prediction, a binary classification task that exploits natural threshold-based auxiliary targets inherent to financial price movements. Financial markets provide an ideal testbed for validating multi-target stacking robustness. Non-stationary dynamics, extreme distribution shifts, and high-frequency data create adversarial conditions that stress-test the framework. Successful validation here provides convincing evidence for broader applicability. <p> 
 
 
                         <p><strong>Core Problem</strong> predicting if SPY experiences ≥0.4% price movement from 10:00 AM to market close, using only the first 30 minutes of trading data.</p>
@@ -83,11 +83,11 @@
                         <p><strong>Multi-Target Groups:</strong></p>
                         <ul style="margin-left: 20px;">
                             <li><strong>CORE models (0.4% threshold)</strong>: Direct signal for primary objective</li>
-                            <li><strong>ADJACENT models (0.3%, 0.5% thresholds)</strong>: Ordinal relationship encoding—captures signal strength and threshold sensitivity</li>
+                            <li><strong>ADJACENT models (0.3%, 0.5% thresholds)</strong>: Ordinal relationship encoding that captures signal strength and threshold sensitivity</li>
                             <li><strong>CONTRARIAN models (-0.5% threshold)</strong>: Opposing directional signal for volatility regime detection and robustness</li>
                         </ul>
 
-                        <p><strong>Cross-ETF Innovation</strong>: Each target group uses predictions from 9 ETFs (bonds, equity indices, small-cap, growth)—each trained on domain-specific features to predict SPY movements. This cross-market approach extracts diverse signal sources: bonds capture risk sentiment, small-caps reflect economic uncertainty, while equity indices provide correlated but distinct market dynamics.</p>
+                        <p><strong>Cross-ETF Innovation</strong>: Each target group uses predictions from 9 ETFs (bonds, equity indices, small-cap, growth), each trained on domain-specific features to predict SPY movements. This cross-market approach extracts diverse signal sources: bonds capture risk sentiment, small-caps reflect economic uncertainty, while equity indices provide correlated but distinct market dynamics.</p>
 
                         <p><strong>Architecture</strong>: Base Models on Multi-Targets → Top-Performing Models Selected → Meta-learner → Final Ensemble Prediction</p>
 
@@ -96,7 +96,7 @@
                             <img src="../../asset/figure/projects/spy-breakout/stacking_comparison.png" alt="Ablation Study - Stacking Comparison" style="width: 100%; max-width: 800px; margin: 0 auto; display: block;">
                         </div>
                         <p><strong>What this shows:</strong> Systematic ablation study comparing individual model groups vs. full ensemble performance.</p>
-                        <p><strong>Key insights:</strong> Each model group contributes meaningful signal above random baseline (42.0%), with individual groups achieving 65.8-75.1% performance. Note that CORE models represent traditional stacking with meta-learner (60.8%). When multiple targets are combined through the meta-learner, performance jumps significantly to 95.6%—a 20+ percentage point improvement proving genuine complementary learning rather than overfitting.</p>
+                        <p><strong>Key insights:</strong> Each model group contributes meaningful signal above random baseline (42.0%), with individual groups achieving 65.8-75.1% performance. Note that CORE models represent traditional stacking with meta-learner (60.8%). When multiple targets are combined through the meta-learner, performance jumps significantly to 95.6%, a 20+ percentage point improvement proving genuine complementary learning rather than overfitting.</p>
 
 
 

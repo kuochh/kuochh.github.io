@@ -242,7 +242,7 @@ Meta-Learning Layer:
                     <h4>2.5.3 Meta-Learner Architecture</h4>
                     <p>The meta-learner evaluates multiple algorithms: RandomForest (primary choice for non-linear interactions), XGBoost (alternative tree-based approach), LogisticRegression variants (linear baselines for comparison). The 324-dimensional meta-feature space requires sophisticated non-linear learning, validating the superiority of tree-based approaches over linear methods.</p>
 
-                    <p>Feature selection parameters (SelectKBest thresholds, PCA components) are fitted only on each fold's training data, ensuring no information leakage—the model selection process sees only historical information available at prediction time.</p>
+                    <p>Feature selection parameters (SelectKBest thresholds, PCA components) are fitted only on each fold's training data, ensuring no information leakage. The model selection process sees only historical information available at prediction time.</p>
 
                     <h2 style="text-align: left;">3. Results and Validation</h2>
 
@@ -376,7 +376,7 @@ Meta-Learning Layer:
 
                     <h3>5.2 Current Limitations</h3>
 
-                    <p><strong>Technical:</strong> High-dimensional regime (p > n) requires aggressive feature selection. Each base model must independently reduce dimensionality—here from 852 to 50-150 features—making feature engineering and selection strategy critical.</p>
+                    <p><strong>Technical:</strong> High-dimensional regime (p > n) requires aggressive feature selection. Each base model must independently reduce dimensionality (here from 852 to 50-150 features), making feature engineering and selection strategy critical.</p>
 
                     <p><strong>When approach fails:</strong> Auxiliary targets too correlated (redundant signals), too uncorrelated with primary target (noise), or when base models are too weak to extract any signal from auxiliary targets.</p>
 
@@ -384,7 +384,7 @@ Meta-Learning Layer:
 
                     <p><strong>Practical:</strong> Implementation demonstrates ensemble methodology on financial data as a challenging non-stationary testbed. Production deployment in any domain requires additional engineering: execution logic specific to application context, computational optimization for latency constraints, and domain-specific risk management.</p>
 
-                    <p><strong>Statistical:</strong> Meta-learner complexity scales with number of base models. With 324-dimensional meta-feature space, validation data must be sufficient to learn cross-target interactions—here requiring 24 months (500+ samples). Insufficient validation data risks meta-learner overfitting to spurious patterns.</p>
+                    <p><strong>Statistical:</strong> Meta-learner complexity scales with number of base models. With 324-dimensional meta-feature space, validation data must be sufficient to learn cross-target interactions, here requiring 24 months (500+ samples). Insufficient validation data risks meta-learner overfitting to spurious patterns.</p>
 
                     <h3>5.3 Future Directions</h3>
 

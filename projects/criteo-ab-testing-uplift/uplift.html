@@ -31,16 +31,16 @@
                     <!-- Brief Recap -->
                     <div style="border: 2px solid #1976d2; border-radius: 8px; padding: 20px; margin-bottom: 30px; background-color: rgba(25, 118, 210, 0.08);">
                         <h3 style="margin-top: 0; color: #1565c0;">Uplift Modeling</h3>
-                        <p style="margin-bottom: 0; font-weight: 500;">CATE achieves strong targeting (0.1753 Qini, top 10% converts at 5× control rate) but reveals a critical limitation: predictions correlate strongly with exposure probability. With 96.4% non-compliance, CATE conflates deliverability with responsiveness—limiting bidding optimization in auction environments.</p>
+                        <p style="margin-bottom: 0; font-weight: 500;">CATE achieves strong targeting (0.1753 Qini, top 10% converts at 5× control rate) but reveals a critical limitation: predictions correlate strongly with exposure probability. With 96.4% non-compliance, CATE conflates deliverability with responsiveness, limiting bidding optimization in auction environments.</p>
                     </div>
 
 
                     <!-- Part 1: Experimental Validation -->
                     <h3>Experimental Validation</h3>
-                    <p>Before estimating treatment effects, we must verify this is a proper randomized controlled trial. Valid causal inference requires that treatment assignment is truly random—any systematic differences between groups would confound our results.</p>
+                    <p>Before estimating treatment effects, we must verify this is a proper randomized controlled trial. Valid causal inference requires that treatment assignment is truly random. Any systematic differences between groups would confound our results.</p>
 
                     <h4>Randomization Check</h4>
-                    <p>All 12 baseline covariates show standardized mean differences (SMD) < 0.1 between treatment and control groups. While t-tests and KS tests detect statistically significant differences (a consequence of large sample size), the effect sizes are negligible—confirming proper randomization and validating causal inference.</p>
+                    <p>All 12 baseline covariates show standardized mean differences (SMD) < 0.1 between treatment and control groups. While t-tests and KS tests detect statistically significant differences (a consequence of large sample size), the effect sizes are negligible, confirming proper randomization and validating causal inference.</p>
 
                     <h4>Non-compliance Analysis</h4>
                     <p>The experiment exhibits severe non-compliance due to real-world advertising constraints (auction losses, ad blockers, technical failures):</p>
@@ -62,7 +62,7 @@
                     </div>
 
                     <h4>Intent-to-Treat (ITT) Effects</h4>
-                    <p>The overall ITT effect is 0.12pp (0.31% - 0.19% with p-value < 0.001)—statistically significant but small in magnitude because 96.4% non-compliance dilutes the signal. This motivates estimating heterogeneous treatment effects: if we can identify which users actually benefit from targeting, we can concentrate budget on high-uplift segments.</p>
+                    <p>The overall ITT effect is 0.12pp (0.31% - 0.19% with p-value < 0.001), which is statistically significant but small in magnitude because 96.4% non-compliance dilutes the signal. This motivates estimating heterogeneous treatment effects: if we can identify which users actually benefit from targeting, we can concentrate budget on high-uplift segments.</p>
 
                     <p style="margin-left: 20px; font-size: 14px; font-style: italic; color: #666;">
                         → <a href="https://github.com/kuochh/criteo-ab-testing-uplift/blob/main/notebooks/01_eda.ipynb" target="_blank" style="color: #495057; text-decoration: none; border-bottom: 1px dotted #495057;">View detailed randomization validation and EDA</a>
@@ -74,7 +74,7 @@
                     <p>With randomization confirmed, we can now estimate treatment effects with confidence. The challenge: identify which users benefit most from targeting despite 96.4% non-compliance.</p>
 
                     <h4>Meta-Learner Approach</h4>
-                    <p>Conditional average treatment effects (CATE) estimate <strong>each user's expected conversion lift from campaign assignment</strong> based on their characteristics. To find the best approach for this data, I compared four meta-learner architectures—algorithms that combine machine learning models to predict individual-level uplift:</p>
+                    <p>Conditional average treatment effects (CATE) estimate <strong>each user's expected conversion lift from campaign assignment</strong> based on their characteristics. To find the best approach for this data, I compared four meta-learner architectures, which are algorithms that combine machine learning models to predict individual-level uplift:</p>
 
                     <ul style="margin-left: 20px;">
                         <li><strong>S-Learner:</strong> Single model with treatment as a feature</li>
@@ -92,7 +92,7 @@
                     <h4>X-Learner Performance</h4>
                     <p>The X-Learner achieved the best performance (Qini coefficient: 0.1753), outperforming other meta-learners because it explicitly handles our 85/15 treatment imbalance through propensity score weighting. The top 10% of targeted users converted at <strong>5× the control rate</strong> (0.96% vs 0.19%), demonstrating strong targeting capability. However, this ranking success masks a fundamental problem for bidding optimization.</p>
 
-                    <p>The uplift curve below shows cumulative uplift (y-axis) as we target more users (x-axis). The X-Learner's steeper curve indicates superior targeting efficiency—it concentrates uplift in the top-ranked users. All four meta-learners significantly outperform random targeting (diagonal line), validating the CATE approach.</p>
+                    <p>The uplift curve below shows cumulative uplift (y-axis) as we target more users (x-axis). The X-Learner's steeper curve indicates superior targeting efficiency. It concentrates uplift in the top-ranked users. All four meta-learners significantly outperform random targeting (diagonal line), validating the CATE approach.</p>
 
                     <div style="text-align: center; margin: 20px 0;">
                         <img src="../../asset/figure/projects/ab-testing/uplift_learners.png" alt="Meta-learner performance comparison" style="width: 100%; margin: 20px auto; display: block;">
@@ -103,7 +103,7 @@
 
                     <p>These aggregate metrics are promising, but do high CATE scores actually predict high uplift? To validate the rankings, I sorted all users by predicted CATE and divided them into 10 equal groups (deciles), then calculated actual treatment-control differences for each group.</p>
 
-                    <p>The X-Learner demonstrates strong ranking capability: the <strong>top 10% achieve 0.77pp uplift</strong> (6.4× the 0.12pp average ITT), while the <strong>bottom 90% fall significantly below the ITT baseline</strong>, with the bottom decile at just 0.01pp. This bidirectional separation proves CATE effectively ranks users—it identifies who to target aggressively (top 10%) and who to avoid (bottom 90%, where treatment may be neutral or negative). Only the top decile exceeds random assignment performance, enabling selective targeting that concentrates budget where it matters most.</p>
+                    <p>The X-Learner demonstrates strong ranking capability: the <strong>top 10% achieve 0.77pp uplift</strong> (6.4× the 0.12pp average ITT), while the <strong>bottom 90% fall significantly below the ITT baseline</strong>, with the bottom decile at just 0.01pp. This bidirectional separation proves CATE effectively ranks users. It identifies who to target aggressively (top 10%) and who to avoid (bottom 90%, where treatment may be neutral or negative). Only the top decile exceeds random assignment performance, enabling selective targeting that concentrates budget where it matters most.</p>
 
                     <div style="text-align: center; margin: 20px 0;">
                         <img src="../../asset/figure/projects/ab-testing/uplift_decile.png" alt="Uplift by CATE Decile Analysis" style="width: 100%; margin: 20px auto; display: block;">
@@ -121,8 +121,8 @@
                     <p>CATE estimates the effect of <strong>campaign assignment</strong>, not the effect of <strong>actually seeing the ad</strong>. With 96.4% non-compliance, these are fundamentally different:</p>
 
                     <ul style="margin-left: 20px;">
-                        <li><strong>What CATE measures:</strong> Intent-to-treat (ITT) effect—outcome difference between assigned vs not assigned</li>
-                        <li><strong>What we need for business:</strong> Local average treatment effect (LATE)—conversion lift when ad is actually delivered</li>
+                        <li><strong>What CATE measures:</strong> Intent-to-treat (ITT) effect (outcome difference between assigned vs not assigned)</li>
+                        <li><strong>What we need for business:</strong> Local average treatment effect (LATE), which is conversion lift when ad is actually delivered</li>
                     </ul>
 
                     <p>CATE conflates two mechanisms: whether we can <strong>reach</strong> the user (win the ad auction) with how they <strong>respond</strong> when reached (ad effectiveness). The correlation between CATE and exposure probability is strong (correlation > 0.5), showing that CATE estimates the effect of <strong>ad campaign assignment</strong>, dominated by <strong>deliverability</strong> rather than ad responsiveness.</p>

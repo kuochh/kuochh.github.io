@@ -66,7 +66,7 @@
                         <h3>Baseline: Standard CATE Uplift Modeling</h3>
                         <p>I implemented conditional average treatment effects (CATE) using meta-learners to identify high-value users for targeting. The X-Learner achieved <strong>0.1753 Qini coefficient</strong>, with the top 10% of targeted users converting at <strong>5× the control rate</strong> (0.96% vs 0.19% baseline).</p>
 
-                        <p>CATE successfully identifies who benefits most from <strong>ad campaign assignment.</strong> This works well for ranking users by expected conversion uplift—standard approach in uplift modeling.</p>
+                        <p>CATE successfully identifies who benefits most from <strong>ad campaign assignment.</strong> This works well for ranking users by expected conversion uplift, which is the standard approach in uplift modeling.</p>
 
                         <h3>The Limitation: CATE Can't Guide Bidding Strategy</h3>
                         <p>However, CATE estimates the effect of <em>treatment assignment</em>, not the effect of actually seeing the ad. In this campaign, CATE conflates two distinct mechanisms:</p>
@@ -85,7 +85,7 @@
                             </ul>
                         </div>
 
-                        <p>CATE treats these users identically—both get the same bid. We cannot optimize budget allocation without understanding <em>why</em> each user scores high: is it because they're easy to reach, or because they respond strongly to ads?</p>
+                        <p>CATE treats these users identically. Both get the same bid. We cannot optimize budget allocation without understanding <em>why</em> each user scores high: is it because they're easy to reach, or because they respond strongly to ads?</p>
 
                         <h3>The Solution: CATE Decomposition via Instrumental Variables</h3>
                         <p>To enable strategic bidding, I decompose CATE into two interpretable components using instrumental variables:</p>
@@ -148,7 +148,7 @@
                             </table>
                         </div>
 
-                        <p><strong>Note:</strong> The 10% ranking cost represents worst-case performance without bidding optimization. In actual deployment, strategic bidding based on decomposed components can recover this cost through optimized budget allocation—requires bid/cost data to validate.</p>
+                        <p><strong>Note:</strong> The 10% ranking cost represents worst-case performance without bidding optimization. In actual deployment, strategic bidding based on decomposed components can recover this cost through optimized budget allocation (requires bid/cost data to validate).</p>
 
                         <!-- <h3>What Makes This Different</h3>
                         <p>Most uplift modeling projects implement standard meta-learners and report metrics. This project:</p>
@@ -163,7 +163,7 @@
                         <h3>What Makes This Different</h3>
                         <p>This uplift modeling project demonstrates:</p>
                         <ul style="margin-left: 20px;">
-                            <li>Identified that CATE's single score conflates two mechanisms—deliverability dominates 95% of predictions, obscuring true ad responsiveness</li>
+                            <li>Identified that CATE's single score conflates two mechanisms. Deliverability dominates 95% of predictions, obscuring true ad responsiveness</li>
                             <li>Applied IV framework to decompose mechanisms, enabling differentiated bidding strategies impossible with black-box CATE</li>
                             <li>Quantified honest tradeoffs: 10% ranking cost for strategic optimization capability, not cherry-picked metrics</li>
                             <li>Connected technical decomposition to concrete business actions: bid high for responsive users, bid low for reachable users</li>
