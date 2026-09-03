@@ -1,83 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chia-Hung Kuo | Portfolio</title>
-    <link rel="stylesheet" href="asset/css/style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chia-Hung Kuo — Data Science, ML, Economics</title>
+<meta name="description" content="PhD Candidate (ABD) in Economics building statistical systems that inform real decisions. Causal inference, econometrics and experimental design. Based in the Greater Seattle Area.">
+<meta property="og:title" content="Chia-Hung Kuo — Data Science, ML, Economics">
+<meta property="og:description" content="PhD Candidate (ABD) in Economics building statistical systems that inform real decisions. Causal inference, econometrics and experimental design. Based in the Greater Seattle Area.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300..700;1,8..60,400&family=Source+Sans+3:ital,wght@0,300..700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Header Section -->
-        <div class="header">
-            <h1>Chia-Hung Kuo</h1>
-            <p class="subtitle">Data Science | ML | Economics</p>
-            <p class="description">Building data-driven solutions with economic insight</p>
-        </div>
-
-        <!-- Main Content Container -->
-        <div class="main-content">
-            <div class="content-area">
-                <!-- Navigation positioned inside content area -->
-                <div class="nav-container">
-                    <div class="nav-tabs">
-                        <a href="index.html" class="nav-tab active">About</a>
-                        <a href="projects.html" class="nav-tab">Portfolio</a>
-                        <a href="contact.html" class="nav-tab">Contact</a>
-                    </div>
-                </div>
-
-                <!-- About Content -->
-                <div class="content-panel">
-                    <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 2rem; width: 100%;">
-                        <img src="asset/figure/about/avatar.JPG" alt="Chia-Hung Kuo" style="max-width: 400px; height: auto; border-radius: 8px; display: block;">
-                    </div>
-
-                    <p>
-                    I'm Chia-Hung Kuo, a PhD Candidate (ABD) in Economics from Michigan State University, now based in Lynnwood, WA. I build statistical systems that inform real decisions, currently consulting for an <a href="https://www.twaea.org.tw/" target="_blank" rel="noopener noreferrer" class="inline-link">NGO in Taiwan</a> where my analysis directly affects government funding allocations to universities.
-                    </p>
-
-                    <p>
-                    My background is in causal inference, econometrics, and experimental design. I care about why things happen, not just what will happen next.
-                    </p>
-
-                    <p>
-                    Most recently, I built an <a href="https://criteo-ab-testing.streamlit.app" target="_blank" rel="noopener noreferrer" class="inline-link">uplift modeling and causal decomposition analysis</a> on a 13.9M-user ad campaign, decomposing treatment effects into reachability and responsiveness using instrumental variables.
-                    </p>
-
-                    <p>
-                    I also enjoy coding for its own sake. You can find me on <a href="https://leetcode.com/u/kuochh/" target="_blank" rel="noopener noreferrer" class="inline-link">LeetCode</a>. Amateur watcher, professional rater on <a href="https://www.imdb.com/user/ur22205839/" target="_blank" rel="noopener noreferrer" class="inline-link">IMDb</a>.
-                    </p>
-
-                    <div style="display: flex; gap: 20px;
-                                margin: 20px 0;">
-                        <div style="flex: 1; padding: 15px;
-                                    background: #e8f5e9;
-                                    border-left: 4px solid #388e3c;
-                                    border-radius: 4px;">
-                            <h4 style="margin-top: 0;">
-                                Resume
-                            </h4>
-                            <a href="asset/doc/cv_kuo.pdf"
-                               target="_blank"
-                               style="color: #2e7d32;
-                                      font-weight: 500;">
-                                View My CV &rarr;
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<nav class="nav">
+  <div class="wrap">
+    <a class="brand" href="index.html">Chia-Hung Kuo</a>
+    <div class="nav-links">
+      <a href="index.html" class="on" aria-current="page">About</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="contact.html">Contact</a>
     </div>
+  </div>
+</nav>
+<main>
+<div class="wrap">
+  <div class="hero">
+    <div class="kicker">Data Science &nbsp;/&nbsp; ML &nbsp;/&nbsp; Economics</div>
+    <h1>Chia-Hung Kuo</h1>
+    <div class="tagline">Building data-driven solutions with economic insight</div>
+  </div>
 
-    <!-- Fixed Footer -->
-    <div class="footer">
-        <div class="footer-content">
-            <div class="footer-links">
-                <span>© 2025 Chia-Hung Kuo</span>
-            </div>
-        </div>
+  <section class="sec first tail">
+    <div class="sec-label">01<br>About</div>
+    <div class="sec-body">
+      <div class="portrait">
+        <img src="asset/figure/about/avatar.JPG" alt="Chia-Hung Kuo" width="288" height="288">
+        <div class="portrait-cap">Based in Greater Seattle Area</div>
+      </div>
+      <p>I'm Chia-Hung Kuo, a PhD Candidate (ABD) in Economics from Michigan State University, now based in the Greater Seattle Area. I build statistical systems that inform real decisions, currently consulting for an <a href="https://www.twaea.org.tw/">NGO in Taiwan</a> where my analysis directly affects government funding allocations to universities.</p>
+      <p>My background is in causal inference, econometrics, and experimental design. I care about why things happen, not just what will happen next.</p>
+      <p>Most recently, I built an <a href="https://criteo-ab-testing.streamlit.app">uplift modeling and causal decomposition analysis</a> on a <span class="num">13.9M</span>-user ad campaign, decomposing treatment effects into reachability and responsiveness using instrumental variables.</p>
+      <p>I also enjoy coding for its own sake. You can find me on <a href="https://leetcode.com/u/kuochh/">LeetCode</a>. Amateur watcher, professional rater on <a href="https://www.imdb.com/user/ur22205839/">IMDb</a>.</p>
     </div>
+  </section>
+
+  <section class="sec tail">
+    <div class="sec-label">02<br>Resume</div>
+    <div class="sec-body">
+      <div><a class="btn" href="asset/doc/cv_kuo.pdf">View my CV <span aria-hidden="true">&rarr;</span></a></div>
+    </div>
+  </section>
+</div>
+</main>
+<footer><div class="wrap">&copy; 2026 Chia-Hung Kuo</div></footer>
 </body>
 </html>

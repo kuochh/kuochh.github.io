@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Multi-Target Stacking — Chia-Hung Kuo</title>
+<meta name="description" content="An ensemble that varies the prediction target rather than the algorithm: base models trained at nested thresholds, with their agreement read by a second-stage meta-learner. Tested on intraday SPY breakouts.">
+<meta property="og:title" content="Multi-Target Stacking — Chia-Hung Kuo">
+<meta property="og:description" content="An ensemble that varies the prediction target rather than the algorithm: base models trained at nested thresholds, with their agreement read by a second-stage meta-learner. Tested on intraday SPY breakouts.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300..700;1,8..60,400&family=Source+Sans+3:ital,wght@0,300..700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<nav class="nav">
+  <div class="wrap">
+    <a class="brand" href="../index.html">Chia-Hung Kuo</a>
+    <div class="nav-links">
+      <a href="../index.html">About</a>
+      <a href="../portfolio.html" class="on" aria-current="page">Portfolio</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </div>
+</nav>
+<div class="crumb">
+  <div class="wrap">
+    <a href="../portfolio.html">Portfolio</a>
+    <span class="sep">/</span>
+    <span class="here">Multi-Target Stacking</span>
+  </div>
+</div>
+<main>
+<div class="wrap">
+  <div class="doc-head">
+    <div class="kicker">Project &nbsp;&middot;&nbsp; in progress</div>
+    <h1>Multi-Target Stacking</h1>
+    <p class="doc-sub">Instead of training different models on one target, I train models on several related targets and use whether they agree to predict the one I actually care about.</p>
+    <div class="tags"><span class="tag">ML Engineering</span><span class="tag">Time Series</span><span class="tag">Ensemble Methods</span></div>
+  </div>
+
+  <section class="sec first">
+    <div class="sec-label">01<br>Working<br>on</div>
+    <div class="sec-body">
+      <p>Standard stacking trains several different learners on one target and combines them. All of the diversity sits in the algorithms. This project moves it to the other side of the problem: vary what the model is asked to predict, and combine those.</p>
+      <p>What started it was a pattern I kept running into. A better base model earns a higher mean <span class="num">PR-AUC</span> and charges a wider month-to-month standard deviation for it. The two travel together, so you end up with something good on average that you cannot trust in any particular month.</p>
+      <p>The test bed is intraday breakout prediction on <span class="num">SPY</span>, minute-level. I chose financial data because it is time series, so the temporal structure is real and cannot be shuffled away, and because it is noisy, which is the condition the method has to survive to be worth anything.</p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-label">02<br>The<br>problem</div>
+    <div class="sec-body wide">
+      <p>Watch the first thirty minutes of the trading day and stop. Take the close of that thirtieth minute bar as the reference price. The question is whether the day's high, across all the hours that remain, will finish more than <span class="num">0.4%</span> above it.</p>
+
+      <figure class="figbox">
+        <svg viewBox="0 0 720 290" role="img" aria-label="Intraday timeline: the first thirty minutes are the observed window, the prediction is made at 10:00, and the day's high finishes above the plus zero point four percent threshold.">
+  <rect x="56" y="24" width="114" height="212" fill="#a85238" opacity="0.07"></rect>
+  <line x1="56" y1="190" x2="700" y2="190" stroke="#c3b7a5" stroke-width="1"></line>
+  <line x1="56" y1="90" x2="700" y2="90" stroke="#a85238" stroke-width="1.4" stroke-dasharray="7 5"></line>
+  <line x1="170" y1="18" x2="170" y2="248" stroke="#8a7f72" stroke-width="1.4"></line>
+  <polyline points="56,196 70,192 84,199 98,188 112,193 126,183 140,190 156,180 170,176 186,182 204,170 224,176 246,158 268,166 292,148 316,140 340,152 364,128 390,116 416,124 442,104 470,96 498,78 524,64 550,72 578,88 606,80 634,98 662,92 690,110 700,114" fill="none" stroke="#2a2320" stroke-width="1.8" stroke-linejoin="round"></polyline>
+  <circle cx="524" cy="64" r="3.6" fill="#a85238"></circle>
+  <text x="56" y="264" font-family="'JetBrains Mono', monospace" font-size="12" fill="#6f6459">9:30</text>
+  <text x="170" y="264" font-family="'JetBrains Mono', monospace" font-size="12" fill="#2a2320" text-anchor="middle">10:00</text>
+  <text x="700" y="264" font-family="'JetBrains Mono', monospace" font-size="12" fill="#6f6459" text-anchor="end">16:00</text>
+  <text x="48" y="194" font-family="'JetBrains Mono', monospace" font-size="12" fill="#6f6459" text-anchor="end">0%</text>
+  <text x="48" y="94" font-family="'JetBrains Mono', monospace" font-size="12" fill="#a85238" text-anchor="end">+0.4%</text>
+  <text x="66" y="42" font-family="'JetBrains Mono', monospace" font-size="11.5" fill="#8a7f72" letter-spacing="1">OBSERVED</text>
+  <text x="182" y="42" font-family="'JetBrains Mono', monospace" font-size="11.5" fill="#2a2320" letter-spacing="1">PREDICTION MADE</text>
+  <text x="540" y="58" font-family="'JetBrains Mono', monospace" font-size="11.5" fill="#a85238" letter-spacing="1">DAY'S HIGH</text>
+  <text x="56" y="286" font-family="'JetBrains Mono', monospace" font-size="11" fill="#8a7f72" letter-spacing="1">HISTORY BEHIND TODAY CONTINUES OFF THE LEFT EDGE</text>
+</svg>
+        <figcaption class="figcap">Zero is the reference price, the close of the thirtieth minute bar. The shaded window is today's opening range; the model also has the history behind it, off the left of this chart. Nothing right of the line is available to it. This day breaks out.</figcaption>
+      </figure>
+
+      <p>One decision per day at a hard information cutoff. Everything up to <span class="num">10:00</span> is available and nothing after it is, and nothing updates as the session unfolds. That gives one labelled observation per trading day, a small dataset by the standards of minute-level finance. The breakout rate itself also drifts month to month, which is why evaluation is by <span class="num">PR-AUC</span> rather than <span class="num">ROC-AUC</span>: <span class="num">ROC-AUC</span> is invariant to that drift and reports a flatteringly stable number straight through it.</p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-label">03<br>The<br>idea</div>
+    <div class="sec-body">
+      <p class="pull">The thresholds are nested.</p>
+      <p>The day's high is a running maximum, so a day that clears <span class="num">+0.5%</span> has necessarily already cleared <span class="num">+0.4%</span>, and a day that clears <span class="num">+0.4%</span> has already cleared <span class="num">+0.3%</span>. Those are not three separate questions. They are three cuts through one quantity, and every day in the dataset carries an answer to all of them at once. The neighbouring labels are free, and committing to a single cutoff throws them away.</p>
+      <p>So keep them. Train base models at each cut, <span class="num">+0.3%</span>, <span class="num">+0.4%</span>, <span class="num">+0.5%</span>, and <span class="num">-0.4%</span> on the other side of the day's range. Each sees the same features, built from everything available at the cutoff, and returns a probability that its own threshold gets cleared.</p>
+      <p>I train a large pool of candidates and keep only the ones that perform on the target in question. That selection is where the diversity comes from, and it favours strength over steadiness: a base model that is right most of the time is worth having even if it is streaky, because holding it steady is the second stage's job. A model that does well at <span class="num">+0.3%</span> does not necessarily do well at <span class="num">+0.4%</span>, so the set surviving at one threshold is not the set surviving at the next.</p>
+      <p class="pull spaced">A confident call at <span class="num">+0.4%</span> means more when the models trained on the neighbouring thresholds say the same thing.</p>
+      <p>So nothing is averaged before the second stage. Every surviving model's prediction goes through individually, because pooling them first would flatten exactly the disagreement that is worth reading. The second stage sees those probabilities and nothing else, never the market data, and what it has to find in them are interactions: the useful pattern is conditional rather than additive, since a confident call at <span class="num">+0.4%</span> counts for more when the <span class="num">+0.5%</span> models back it and for less when they do not. That is a product, not a sum, which is why I expect a tree-based meta-learner to outperform a logistic regression here.</p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-label">04<br>The<br>plan</div>
+    <div class="sec-body flush">
+      <div class="rows plan">
+        <div class="row">
+          <div class="plan-key">Doing</div>
+          <div class="plan-val">Building the framework outlined above: leakage-safe end to end, evaluated by walk-forward validation.</div>
+        </div>
+        <div class="row">
+          <div class="plan-key">Expecting</div>
+          <div class="plan-val">A live demo running on pre-calculated predictions, so the results can be poked at rather than only read.</div>
+        </div>
+        <div class="row">
+          <div class="plan-key">Products</div>
+          <div class="plan-val">A package for anyone with minute-level data to run the method on their own.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec last">
+    <div class="sec-label">05<br>Where it<br>stands</div>
+    <div class="sec-body">
+      <p>Still in progress. The evaluation is running, and results go up here when it finishes. I am enjoying this one.</p>
+    </div>
+  </section>
+
+  <nav class="pager">
+    <a class="adj" href="ab-testing.html">
+      <span class="pager-dir">&larr; Previous</span>
+      <span class="pager-title">A/B Testing with Uplift Modeling</span>
+    </a>
+    <a class="pager-all" href="../portfolio.html">All projects</a>
+    <a class="adj next" href="adult-child-migration.html">
+      <span class="pager-dir">Next &rarr;</span>
+      <span class="pager-title">Family Structure and Migration</span>
+    </a>
+  </nav>
+</div>
+</main>
+<footer><div class="wrap">&copy; 2026 Chia-Hung Kuo</div></footer>
+</body>
+</html>
